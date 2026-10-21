@@ -7,7 +7,7 @@ import Toybox.WatchUi;
 // FIT lifecycle kept separate from the absolute workout timeline.
 class WorkoutRecording {
     var session;
-    var state = "SIN GRABAR";
+    var state = "NOT RECORDING";
     var phaseIndex = 0;
     var lapErrors = 0;
     var missedBoundaries = 0;
@@ -57,10 +57,10 @@ class WorkoutRecording {
         phaseIndex = 0;
         lapErrors = 0;
         missedBoundaries = 0;
-        state = "ERROR INICIO FIT";
+        state = "FIT START ERROR";
         try {
             session = createSession();
-            if (session != null && session.start()) { state = "GRABANDO"; return true; }
+            if (session != null && session.start()) { state = "RECORDING"; return true; }
         } catch (e) {}
         // Keep even an unstarted session available for save/retry; never discard data.
         return false;
@@ -81,11 +81,11 @@ class WorkoutRecording {
     function finish() {
         if (!pending()) { return true; }
         try {
-            if (session.isRecording() && !session.stop()) { state = "ERROR STOP FIT"; return false; }
-            if (!session.save()) { state = "ERROR SAVE FIT"; return false; }
+            if (session.isRecording() && !session.stop()) { state = "FIT STOP ERROR"; return false; }
+            if (!session.save()) { state = "FIT SAVE ERROR"; return false; }
             session = null;
-            state = "FIT GUARDADO";
+            state = "FIT SAVED";
             return true;
-        } catch (e) { state = "ERROR FIT"; return false; }
+        } catch (e) { state = "FIT ERROR"; return false; }
     }
 }

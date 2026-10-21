@@ -49,7 +49,7 @@ function recordingFullWorkout(logger) {
     // stop/save closes the final phase; no extra zero-length lap.
     Test.assert(r.finish() && r.finish());
     Test.assert(f.starts == 1 && f.stops == 1 && f.saves == 1 && f.laps == 8);
-    Test.assert(!r.pending() && r.state.equals("FIT GUARDADO"));
+    Test.assert(!r.pending() && r.state.equals("FIT SAVED"));
     Test.assert(r.lapErrors == 0 && r.missedBoundaries == 0);
     return true;
 }

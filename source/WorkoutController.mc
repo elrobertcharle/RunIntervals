@@ -8,7 +8,7 @@ class WorkoutController {
     var engine;
     var timer;
     var running = false;
-    var status = "LISTO";
+    var status = "READY";
     var lastUi = 0;
     var recording;
 
@@ -24,16 +24,16 @@ class WorkoutController {
             WatchUi.requestUpdate();
             return;
         }
-        if (!(Attention has :playTone)) { status = "SIN SONIDO"; WatchUi.requestUpdate(); return; }
+        if (!(Attention has :playTone)) { status = "NO SOUND"; WatchUi.requestUpdate(); return; }
         try {
             recording.prepare();
-            if (!recording.start()) { finish("ERROR INICIO"); return; }
+            if (!recording.start()) { finish("START ERROR"); return; }
             engine = new WorkoutEngine(repetitions, 60000, 60000, System.getTimer());
             lastUi = 0;
             running = true;
-            status = "EN CURSO";
+            status = "IN PROGRESS";
             timer.start(method(:onTick), 50, true);
-        } catch (e) { finish("ERROR INICIO"); }
+        } catch (e) { finish("START ERROR"); }
         WatchUi.requestUpdate();
     }
     function onTick() {
@@ -44,13 +44,13 @@ class WorkoutController {
             if (engine.done()) {
                 Attention.playTone(Attention.TONE_SUCCESS);
                 recording.completed(engine.index);
-                finish("COMPLETO");
+                finish("COMPLETE");
                 return;
             }
             // Only the current phase can produce a reference tone.
             if (event[1]) { Attention.playTone(Attention.TONE_LOUD_BEEP); }
             else if (event[0]) { Attention.playTone(Attention.TONE_INTERVAL_ALERT); }
-        } catch (e) { finish("ERROR SONIDO"); return; }
+        } catch (e) { finish("SOUND ERROR"); return; }
         // Sound is requested first; disk-related lap work cannot delay that request.
         if (event[0]) { recording.phaseChanged(engine.index); }
         var now = engine.elapsed(tick);

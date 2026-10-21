@@ -10,22 +10,22 @@ class WorkoutEngine {
 
     function initialize(repetitions, warmupMs, cooldownMs, startTick) {
         if (repetitions.size() == 0 || warmupMs < 0 || cooldownMs < 0) {
-            throw new Toybox.Lang.InvalidValueException("Sesion vacia o duracion negativa");
+            throw new Toybox.Lang.InvalidValueException("Empty workout or negative duration");
         }
         clock = new DeadlineEngine(1, 1, startTick);
-        addPhase("CALENTAMIENTO", warmupMs, -1, 0);
+        addPhase("WARM-UP", warmupMs, -1, 0);
         for (var i = 0; i < repetitions.size(); i += 1) {
             var r = repetitions[i];
             if (r[0] <= 0 || r[0] % 100 != 0 || r[1] <= 0 || r[1] % 100 != 0 || r[2] < 0) {
-                throw new Toybox.Lang.InvalidValueException("Repeticion invalida");
+                throw new Toybox.Lang.InvalidValueException("Invalid repetition");
             }
-            addPhase("ESFUERZO", (r[0] / 100) * r[1].toLong(), i, r[1]);
+            addPhase("EFFORT", (r[0] / 100) * r[1].toLong(), i, r[1]);
             // Recovery belongs between repetitions, never after the final one.
-            if (i + 1 < repetitions.size()) { addPhase("RECUPERACION", r[2], i + 1, 0); }
+            if (i + 1 < repetitions.size()) { addPhase("RECOVERY", r[2], i + 1, 0); }
         }
-        addPhase("ENFRIAMIENTO", cooldownMs, -1, 0);
+        addPhase("COOL-DOWN", cooldownMs, -1, 0);
         if (totalMs >= 4294967296l) {
-            throw new Toybox.Lang.InvalidValueException("Sesion demasiado larga");
+            throw new Toybox.Lang.InvalidValueException("Workout too long");
         }
     }
 
@@ -46,7 +46,7 @@ class WorkoutEngine {
         var changed = false;
         while (!done() && now >= phase()[2]) {
             var old = phase();
-            if (old[0].equals("ESFUERZO")) {
+            if (old[0].equals("EFFORT")) {
                 var remaining = ((old[2] - old[1]) / old[4]).toNumber() - nextMark;
                 if (remaining > 0) { skipped += remaining; }
             }
@@ -54,7 +54,7 @@ class WorkoutEngine {
             nextMark = 1;
             changed = true;
         }
-        if (done() || !phase()[0].equals("ESFUERZO")) { return [changed, false]; }
+        if (done() || !phase()[0].equals("EFFORT")) { return [changed, false]; }
         var p = phase();
         var due = ((now - p[1]) / p[4]).toNumber();
         if (due < nextMark) { return [changed, false]; }

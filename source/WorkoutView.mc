@@ -13,10 +13,10 @@ class WorkoutView extends WatchUi.View {
         var title = workout.status;
         var main = "4 x 400 m";
         var detail = "23.0 / 22.7 / 22.4 / 22.1 s";
-        var next = "Calentar/enfriar: 1 min";
-        var extra = "Recuperacion: 1 min";
+        var next = "Warm-up/cool-down: 1 min";
+        var extra = "Recovery: 1 min";
         var fit = workout.recording;
-        var footer = "START: iniciar | BACK: salir";
+        var footer = "START: start | BACK: exit";
         if (workout.running) {
             var e = workout.engine;
             var p = e.phase();
@@ -28,29 +28,29 @@ class WorkoutView extends WatchUi.View {
             detail = "";
             next = "";
             extra = "";
-            footer = (fit.gpsReady() ? "GPS OK" : "GPS buscando") + " | FC " + (fit.heartRate == null ? "--" : fit.heartRate.toString());
+            footer = (fit.gpsReady() ? "GPS OK" : "GPS searching") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString());
             if (p[3] >= 0) {
                 var r = workout.repetitions[p[3]];
-                detail = (p[0].equals("ESFUERZO") ? "Serie " : "Siguiente ") + (p[3] + 1) + "/" + workout.repetitions.size();
+                detail = (p[0].equals("EFFORT") ? "Rep " : "Next ") + (p[3] + 1) + "/" + workout.repetitions.size();
                 var pace = (r[1] / 100).toNumber();
                 extra = (pace / 60).toNumber() + ":" + (pace % 60).format("%02d") + "/km | " + (r[1] / 1000.0).format("%.1f") + " s";
-                if (p[0].equals("ESFUERZO")) {
+                if (p[0].equals("EFFORT")) {
                     var markLeft = p[1] + e.nextMark * p[4] - now;
                     if (markLeft < 0) { markLeft = 0; }
                     next = "100 m: " + (markLeft / 1000.0).format("%.1f") + " s";
                 }
             }
         } else if (workout.engine != null) {
-            detail = "Avisos omitidos: " + workout.engine.skipped;
+            detail = "Missed beeps: " + workout.engine.skipped;
             next = fit.state;
-            extra = "Vueltas fallidas: " + fit.lapErrors + " | Saltos: " + fit.missedBoundaries;
+            extra = "Lap errors: " + fit.lapErrors + " | Skips: " + fit.missedBoundaries;
         } else {
-            next = fit.gpsReady() ? "GPS OK | FIT al iniciar" : "Esperando GPS (opcional)";
-            extra = fit.sensorWarning ? "Revisar GPS / sensor FC" : "Recuperacion: 1 min | FC " + (fit.heartRate == null ? "--" : fit.heartRate.toString());
+            next = fit.gpsReady() ? "GPS OK | FIT on start" : "Waiting for GPS (optional)";
+            extra = fit.sensorWarning ? "Check GPS / HR sensor" : "Recovery: 1 min | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString());
         }
         if (fit.pending() && !workout.running) {
             next = fit.state;
-            footer = "START: reintentar guardado";
+            footer = "START: retry save";
         }
         dc.drawText(x, (h * 0.13).toNumber(), Graphics.FONT_SMALL, title, Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x, (h * 0.29).toNumber(), Graphics.FONT_LARGE, main, Graphics.TEXT_JUSTIFY_CENTER);
@@ -65,7 +65,7 @@ class WorkoutDelegate extends WatchUi.BehaviorDelegate {
     function initialize(w) { BehaviorDelegate.initialize(); workout = w; }
     function onSelect() { workout.start(); return true; }
     function onBack() {
-        if (workout.running) { workout.finish("CANCELADO"); }
+        if (workout.running) { workout.finish("CANCELLED"); }
         else if (workout.recording.pending()) { workout.start(); }
         else { workout.shutdown(); System.exit(); }
         return true;

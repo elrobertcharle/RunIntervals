@@ -14,14 +14,14 @@ function workoutTimeline(logger) {
     Test.assert(e.update(57007)[1]);
     var event = e.update(103000);
     Test.assert(event[0] && !event[1]);
-    Test.assert(e.phase()[0].equals("RECUPERACION"));
+    Test.assert(e.phase()[0].equals("RECOVERY"));
     Test.assert(!e.update(150000)[1]);
     Test.assert(e.update(163049)[0]);
     Test.assert(e.phase()[1] == 162000);
     Test.assert(!e.update(185099)[1]);
     Test.assert(e.update(185107)[1]);
     Test.assert(e.update(251400)[0]);
-    Test.assert(e.phase()[0].equals("ENFRIAMIENTO"));
+    Test.assert(e.phase()[0].equals("COOL-DOWN"));
     Test.assert(!e.update(256399)[1]);
     Test.assert(e.update(256400)[0] && e.done());
     Test.assert(!e.update(300000)[0]);

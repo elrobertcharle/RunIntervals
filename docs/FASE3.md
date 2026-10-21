@@ -7,7 +7,7 @@ La fase 2 fue probada satisfactoriamente en el Forerunner 970 según confirmaci�
 - Al abrir la aplicación se solicitan GPS continuo y frecuencia cardíaca. Se muestra su disponibilidad; esperar GPS OK al aire libre antes de START para registrar la ruta desde el principio. Se puede iniciar sin señal para una prueba interior.
 - START crea una única sesión FIT de carrera y después fija el origen monotónico del entrenamiento. Calentamiento, esfuerzos, recuperaciones y enfriamiento quedan dentro de esa grabación sin pausas.
 - Cada transición intermedia solicita una vuelta. El tono se solicita primero, antes del trabajo de grabación. La finalización detiene y guarda la sesión; stop/save cierra la última vuelta, sin añadir una vuelta vacía.
-- BACK durante el entrenamiento termina y guarda la actividad parcial. Al finalizar correctamente aparece FIT GUARDADO. START permite otra sesión; BACK sale.
+- BACK durante el entrenamiento termina y guarda la actividad parcial. Al finalizar correctamente aparece FIT SAVED. START permite otra sesión; BACK sale.
 - Un fallo de stop/save conserva la sesión en memoria y bloquea un nuevo entrenamiento. START o BACK reintenta guardarla. onStop realiza otro intento al cerrar la aplicación. No se descarta la actividad automáticamente. Un cierre forzado, batería agotada o fallo persistente del sistema no garantiza recuperación.
 - Los errores de vueltas se muestran al terminar. addLap no permite fechar vueltas en el pasado: un callback que cruce varias fases crea como máximo una vuelta actual y contabiliza límites omitidos como Saltos. No se reconstruyen vueltas ficticias. Esto no cambia los objetivos temporales del motor.
 
@@ -29,7 +29,7 @@ Copiar el nuevo RunIntervals.prg a GARMIN/APPS y abrir RunIntervals. Esperar GPS
 | 8 | Esfuerzo 4 | 1:28,4 |
 | 9 | Enfriamiento | 1:00 |
 
-Total planificado: 11:00,8. Las duraciones FIT corresponden a las solicitudes reales y a la resolución de Garmin; no se promete coincidencia al milisegundo. Al finalizar comprobar FIT GUARDADO, cero vueltas fallidas y cero saltos. Sincronizar Garmin Connect y revisar una sola actividad de carrera, nueve vueltas, tiempo de recuperación incluido, mapa al aire libre y curva de FC si hay datos.
+Total planificado: 11:00,8. Las duraciones FIT corresponden a las solicitudes reales y a la resolución de Garmin; no se promete coincidencia al milisegundo. Al finalizar comprobar FIT SAVED, cero vueltas fallidas y cero saltos. Sincronizar Garmin Connect y revisar una sola actividad de carrera, nueve vueltas, tiempo de recuperación incluido, mapa al aire libre y curva de FC si hay datos.
 
 Probar además BACK a mitad de sesión: debe guardar una actividad parcial. Después ejecutar otra sesión sin cerrar la app y comprobar que se guarda separada. Repetir con pantalla atenuada y verificar que los pitidos siguen comportándose como en fase 2. Compartir el FIT exportado o los resultados de Garmin Connect permite revisar la grabación real.
 
@@ -45,3 +45,7 @@ APIs oficiales verificadas:
 - https://developer.garmin.com/connect-iq/api-docs/Toybox/Sensor.html
 
 También se consultó el ejemplo RecordSample del SDK instalado para activación/desactivación de GPS y grabación.
+
+## Idioma de la aplicación
+
+La interfaz de RunIntervals se muestra en inglés, incluidos WARM-UP, EFFORT, RECOVERY, COOL-DOWN y FIT SAVED. El nombre de la sesión FIT sigue siendo RunIntervals; los datos estándar se guardan como valores numéricos y enumeraciones. La aplicación no escribe etiquetas de fase en español en el FIT. Las etiquetas generadas por Garmin Connect y los avisos nativos del reloj siguen los ajustes de idioma de Garmin.
