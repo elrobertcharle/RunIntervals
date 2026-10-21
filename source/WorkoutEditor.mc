@@ -1,14 +1,20 @@
 import Toybox.Graphics;
 import Toybox.WatchUi;
 
-// A draft never mutates the active plan until Apply is selected.
+// Profiles load into this draft. Only Apply changes the active session.
 class WorkoutEditor extends WatchUi.View {
     var workout;
     var draft;
     var field = 0;
     var editing = false;
     var candidate = 0;
-    var labels = ["Repetitions", "Distance / rep", "100 m interval", "Recovery", "Warm-up", "Cool-down", "Apply session", "Restore demo"];
+    var individual = false;
+    var repIndex = 0;
+    var slot = 1;
+    var confirming = false;
+    var message = "";
+    var labels = ["Repetitions", "Distance / rep", "100 m interval", "Recovery", "Warm-up", "Cool-down", "Apply session", "Restore demo", "Edit each rep", "Profile slot", "Save profile", "Load profile", "Delete profile"];
+    var repLabels = ["Repetition", "Distance", "100 m interval", "Recovery after", "Session editor"];
     var text;
     function initialize(w) {
         View.initialize();
@@ -16,55 +22,96 @@ class WorkoutEditor extends WatchUi.View {
         draft = w.plan.copy();
         text = new WorkoutText();
     }
+    function currentValue() {
+        if (individual) { return field == 0 ? repIndex + 1 : draft.repetitionValue(repIndex, field); }
+        return field == 9 ? slot : draft.value(field);
+    }
     function displayValue(v) {
-        if (field == 0) { return v.toString(); }
+        if (field == 0 || (!individual && field == 9)) { return v.toString(); }
         if (field == 1) { return v + " m"; }
         if (field == 2) { return text.interval(v * 100) + " s"; }
         return text.duration(v * 1000);
     }
     function move(direction) {
+        message = "";
+        confirming = false;
         if (editing) {
-            candidate += direction * draft.step(field);
-            if (candidate < draft.minimum(field)) { candidate = draft.minimum(field); }
-            if (candidate > draft.maximum(field)) { candidate = draft.maximum(field); }
-        } else { field = (field + direction + labels.size()) % labels.size(); }
+            var selector = (individual && field == 0) || (!individual && field == 9);
+            var low = selector ? 1 : draft.minimum(field);
+            var high = selector ? (individual ? draft.repetitions.size() : 3) : draft.maximum(field);
+            candidate += direction * (selector ? 1 : draft.step(field));
+            if (candidate < low) { candidate = low; }
+            if (candidate > high) { candidate = high; }
+        } else { field = (field + direction + (individual ? repLabels.size() : labels.size())) % (individual ? repLabels.size() : labels.size()); }
         WatchUi.requestUpdate();
     }
     function select() {
-        if (editing) { draft.setValue(field, candidate); editing = false; }
-        else if (field == 6) {
+        message = "";
+        if (editing) {
+            if (individual && field == 0) { repIndex = candidate - 1; }
+            else if (!individual && field == 9) { slot = candidate; }
+            else if (individual) { draft.setRepetitionValue(repIndex, field, candidate); }
+            else { draft.setValue(field, candidate); }
+            editing = false;
+        } else if (individual && field == 4) { individual = false; field = 8; }
+        else if (!individual && field == 6) {
             if (workout.applyPlan(draft)) { WatchUi.popView(WatchUi.SLIDE_IMMEDIATE); }
-        } else if (field == 7) { draft = new WorkoutPlan(); field = 0; }
-        else { candidate = draft.value(field); editing = true; }
+            else { message = "Apply failed: retry"; }
+        } else if (!individual && field == 7) { draft = new WorkoutPlan(); field = 0; }
+        else if (!individual && field == 8) { individual = true; repIndex = 0; field = 0; }
+        else if (!individual && field >= 10) {
+            var profiles = workout.profiles;
+            var key = profiles.slotKey(slot);
+            if (field == 11) {
+                var loaded = profiles.load(key);
+                if (loaded != null) { draft = loaded; message = "Loaded into draft"; }
+                else { message = profiles.message; }
+            } else if (!confirming) { confirming = true; message = "START again: confirm"; }
+            else {
+                if (field == 10) { profiles.save(key, draft); }
+                else { profiles.erase(key); }
+                confirming = false;
+                message = profiles.message;
+            }
+        } else { candidate = currentValue(); editing = true; }
         WatchUi.requestUpdate();
     }
     function back() {
-        if (editing) { editing = false; WatchUi.requestUpdate(); }
+        if (confirming) { confirming = false; message = "Cancelled"; }
+        else if (editing) { editing = false; }
+        else if (individual) { individual = false; field = 8; }
         else { WatchUi.popView(WatchUi.SLIDE_IMMEDIATE); }
+        WatchUi.requestUpdate();
     }
     function onUpdate(dc) {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
         var x = dc.getWidth() / 2;
         var h = dc.getHeight();
-        dc.drawText(x, h * 0.12, Graphics.FONT_SMALL, editing ? "CHANGE VALUE" : "EDIT SESSION", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(x, h * 0.12, Graphics.FONT_SMALL, editing ? "CHANGE VALUE" : (individual ? "REP " + (repIndex + 1) + " / " + draft.repetitions.size() : "EDIT SESSION"), Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
-        dc.drawText(x, h * 0.27, Graphics.FONT_SMALL, labels[field], Graphics.TEXT_JUSTIFY_CENTER);
-        var value = field < 6 ? displayValue(editing ? candidate : draft.value(field)) : (field == 6 ? "Apply" : "Demo");
+        dc.drawText(x, h * 0.27, Graphics.FONT_SMALL, individual ? repLabels[field] : labels[field], Graphics.TEXT_JUSTIFY_CENTER);
+        var numeric = individual ? field < 4 : (field < 6 || field == 9);
+        var value = numeric ? displayValue(editing ? candidate : currentValue()) : (individual ? "Back" : (field == 6 ? "Apply" : (field == 7 ? "Demo" : (field == 8 ? "Open" : "Slot " + slot))));
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_BLACK);
         dc.drawText(x, h * 0.40, Graphics.FONT_LARGE, value, Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         var hint = "";
-        if (field == 2) { hint = text.pace((editing ? candidate : draft.value(field)) * 100); }
-        else if (field == 6) { hint = "Total " + text.duration(draft.timeline().totalMs); }
-        else if (field == 7) { hint = "4 x 400 m, varied pace"; }
-        else if (field >= 3) { hint = "0:00 = skip phase"; }
+        if (field == 2) { hint = text.pace((editing ? candidate : currentValue()) * 100); }
+        else if (!individual && field == 6) { hint = "Total " + text.duration(draft.timeline().totalMs); }
+        else if (!individual && field == 7) { hint = "4 x 400 m, varied pace"; }
+        else if (!individual && field >= 9) { hint = "Profile " + slot + " / 3"; }
+        else if (individual && field == 3 && repIndex == draft.repetitions.size() - 1) { hint = "Last recovery unused"; }
+        else if (field >= 3 && field <= 5 && numeric) { hint = "0:00 = skip phase"; }
         dc.drawText(x, h * 0.54, Graphics.FONT_SMALL, hint, Graphics.TEXT_JUSTIFY_CENTER);
-        var note = field >= 1 && field <= 3 ? "Applies to every rep" : "Kept until app exits";
-        if (!editing && draft.mixed(field)) { note = "Mixed: edit sets all reps"; }
-        dc.drawText(x, h * 0.66, Graphics.FONT_TINY, note, Graphics.TEXT_JUSTIFY_CENTER);
+        var note = individual ? "Changes stay in draft" : (field >= 1 && field <= 3 ? "Applies to every rep" : "Apply saves session");
+        if (!individual && !editing && draft.mixed(field)) { note = "Mixed: edit sets all reps"; }
+        if (!individual && field == 10) { note = "Replaces selected slot"; }
+        if (!individual && field == 11) { note = "Load, review, then Apply"; }
+        if (!individual && field == 12) { note = "Deletes selected slot"; }
+        dc.drawText(x, h * 0.66, Graphics.FONT_TINY, message.equals("") ? note : message, Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x, h * 0.76, Graphics.FONT_TINY, editing ? "UP + / DOWN -" : "UP/DOWN: field", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x, h * 0.83, Graphics.FONT_TINY, editing ? "START: set" : "START: edit", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(x, h * 0.83, Graphics.FONT_TINY, editing ? "START: set" : "START: select", Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
 

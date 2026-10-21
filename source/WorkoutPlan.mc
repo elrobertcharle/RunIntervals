@@ -1,4 +1,4 @@
-// In-memory session settings. Persistence and individual repetition editing are phase 5.
+// Session settings shared by the editor, persistent profiles and timeline.
 class WorkoutPlan {
     var repetitions;
     var warmupMs = 60000;
@@ -55,6 +55,15 @@ class WorkoutPlan {
             if (repetitions[i][field - 1] != repetitions[0][field - 1]) { return true; }
         }
         return false;
+    }
+    function repetitionValue(index, field) {
+        return repetitions[index][field - 1] / (field == 2 ? 100 : (field == 3 ? 1000 : 1));
+    }
+    function setRepetitionValue(index, field, v) {
+        if (index < 0 || index >= repetitions.size() || field < 1 || field > 3 ||
+            v < minimum(field) || v > maximum(field) || v % step(field) != 0) { return false; }
+        repetitions[index][field - 1] = v * (field == 2 ? 100 : (field == 3 ? 1000 : 1));
+        return true;
     }
     function timeline() { return new WorkoutEngine(repetitions, warmupMs, cooldownMs, 0); }
 }

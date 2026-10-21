@@ -22,10 +22,10 @@ class WorkoutView extends WatchUi.View {
             line(dc, 0.62, Graphics.FONT_TINY, "Lap errors: " + fit.lapErrors + " | Skips: " + fit.missedBoundaries);
         } else {
             var plan = workout.plan;
-            line(dc, 0.25, Graphics.FONT_LARGE, plan.repetitions.size() + " x " + plan.repetitions[0][0] + " m");
+            line(dc, 0.25, Graphics.FONT_LARGE, plan.mixed(1) ? plan.repetitions.size() + " varied reps" : plan.repetitions.size() + " x " + plan.repetitions[0][0] + " m");
             line(dc, 0.41, Graphics.FONT_SMALL, plan.mixed(2) ? "Varied pace / 100 m" : text.pace(plan.repetitions[0][1]) + " | " + text.interval(plan.repetitions[0][1]) + " s");
             line(dc, 0.53, Graphics.FONT_TINY, "Warm " + text.duration(plan.warmupMs) + " | Cool " + text.duration(plan.cooldownMs));
-            line(dc, 0.62, Graphics.FONT_TINY, "Recovery " + text.duration(plan.repetitions[0][2]));
+            line(dc, 0.62, Graphics.FONT_TINY, plan.mixed(3) ? "Varied recovery" : "Recovery " + text.duration(plan.repetitions[0][2]));
         }
         line(dc, 0.71, Graphics.FONT_TINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
         line(dc, 0.79, Graphics.FONT_TINY, fit.pending() ? "START: save" : "START: run");

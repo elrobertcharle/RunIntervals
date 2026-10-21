@@ -34,7 +34,8 @@ El editor indica cuando los valores son mixtos. Al ampliar la cantidad, las nuev
 repeticiones copian los parámetros de la primera, sin compartir sus arrays.
 La última repetición nunca tiene recuperación posterior. Cero omite las fases opcionales.
 
-La configuración aplicada se conserva al reiniciar una sesión dentro de la app,
+Comportamiento original de fase 4 (sustituido por [FASE5.md](FASE5.md)):
+la configuración aplicada se conserva al reiniciar una sesión dentro de la app,
 pero se pierde al salir de ella. Los perfiles persistentes y la edición individual
 por repetición corresponden a la fase 5.
 

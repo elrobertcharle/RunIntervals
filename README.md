@@ -15,7 +15,7 @@ La primera etapa de precisión está completada según confirmación del usuario
 
 Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia o reinicia; BACK termina y guarda la sesión; otro BACK sale si no hay guardado pendiente. No hay pausa.
 
-La fase 4 añade un editor en el reloj (UP o MENU antes de iniciar), un borrador con aplicar/cancelar y una pantalla de entrenamiento con cuenta regresiva grande y progreso por fase. La configuración vive en memoria hasta salir de la app. Controles, límites y protocolo en [FASE4.md](docs/FASE4.md). La fase 3 conserva una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. BACK guarda la actividad parcial. Véanse el comportamiento de errores y el protocolo en [FASE3.md](docs/FASE3.md).
+La fase 4 añade un editor en el reloj (UP o MENU antes de iniciar), un borrador con aplicar/cancelar y una pantalla de entrenamiento con cuenta regresiva grande y progreso por fase. Controles y límites en [FASE4.md](docs/FASE4.md). La fase 5 conserva la última sesión aplicada al salir, añade tres perfiles persistentes y permite editar distancia, intervalo y recuperación por repetición. Uso y protocolo en [FASE5.md](docs/FASE5.md). La fase 3 conserva una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. BACK guarda la actividad parcial. Véanse el comportamiento de errores y el protocolo en [FASE3.md](docs/FASE3.md).
 
 ## Compilar
 
@@ -44,6 +44,6 @@ El laboratorio mantiene su identidad de aplicación y puede coexistir con la ver
 node --test tests/analyze-log.test.mjs
 ```
 
-Los [requisitos](docs/REQUISITOS.md) conservan el alcance completo. Fase 2 validada por el usuario en el reloj. Fase 3 implementada y pendiente de validación física del FIT. Fase 4 validada por el usuario en el simulador; queda pendiente su validación física. Próximas etapas: perfiles guardados y edición individual por repetición; validación en pista.
+Los [requisitos](docs/REQUISITOS.md) conservan el alcance completo. Fase 2 validada por el usuario en el reloj. Fase 3 implementada y pendiente de validación física del FIT. Fase 4 validada por el usuario en el simulador; queda pendiente su validación física. Fase 5 implementada: compilaciones correctas y 22 pruebas aprobadas en el simulador; pendiente de validación manual de la nueva interfaz y de persistencia al cerrar/reabrir en el reloj. Fase 6: validación en pista y optimización.
 
 La fase 3 añade ahora nombres de fase, objetivos y resultado de la sesión como campos FIT de desarrollador. Detalles y límites en [FIT-METADATA.md](docs/FIT-METADATA.md).

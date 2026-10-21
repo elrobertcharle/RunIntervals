@@ -5,6 +5,7 @@ import Toybox.WatchUi;
 
 class WorkoutController {
     var plan;
+    var profiles;
     var repetitions;
     var engine;
     var timer;
@@ -15,7 +16,12 @@ class WorkoutController {
     var finishedMs = 0;
 
     function initialize() {
-        plan = new WorkoutPlan();
+        profiles = new WorkoutProfiles();
+        plan = profiles.load("active-session");
+        if (plan == null) {
+            plan = new WorkoutPlan();
+            if (!profiles.message.equals("Empty slot")) { status = "SAVED PLAN ERROR"; }
+        }
         repetitions = plan.repetitions;
         timer = new Timer.Timer();
         recording = new WorkoutRecording();
@@ -25,6 +31,7 @@ class WorkoutController {
         if (running || recording.pending()) { return false; }
         // Validate the entire timeline before replacing the session.
         try { draft.timeline(); } catch (e) { return false; }
+        if (!profiles.save("active-session", draft)) { return false; }
         plan = draft.copy();
         repetitions = plan.repetitions;
         engine = null;
