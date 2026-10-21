@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
+  <iq:application id="81ff124620a847ccba4d942f97060001" type="watch-app" name="@Strings.LabName" entry="LabApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="5.0.0">
+    <iq:products><iq:product id="fr970"/></iq:products>
+    <iq:permissions><iq:uses-permission id="Fit"/></iq:permissions>
+    <iq:languages><iq:language>spa</iq:language><iq:language>eng</iq:language></iq:languages>
+    <iq:barrels/>
+  </iq:application>
+</iq:manifest>
+

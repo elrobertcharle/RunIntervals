@@ -1,49 +1,47 @@
-# RunIntervals 970 — laboratorio de precisión
+# RunIntervals 970
 
-Primera fase del proyecto para Garmin Forerunner 970. El documento original se conserva en [docs/REQUISITOS.md](docs/REQUISITOS.md).
+Aplicación Monkey C para Garmin Forerunner 970. Desarrollo de la versión definitiva en `codex/version-definitiva`.
 
-Estado: código experimental sin compilar todavía con Connect IQ y sin mediciones físicas. No hay un PRG validado. La carpeta inicial estaba vacía; en las ubicaciones habituales del equipo no se encontraron SDK de Garmin ni Java. No se declara ninguna precisión audible.
+La primera etapa de precisión está completada según confirmación del usuario. Los archivos de medición no están versionados; no se atribuyen cifras de precisión audible sin esos datos.
 
-## Qué incluye
+## Fase 2: motor automático
 
-- Aplicación independiente Monkey C dirigida a `fr970`.
-- Selección de intervalos de 22,0 / 22,5 / 23,0 segundos y 20 marcas por prueba (7:20 / 7:30 / 7:40).
-- Objetivos `origen + índice × intervalo_ms`, con aritmética entera y tratamiento del desbordamiento del reloj.
-- Comprobación experimental cada 50 ms y pantalla solicitada cada 250 ms. La cadencia real depende del dispositivo.
-- Registro de objetivos, solicitudes, retorno de la API, omisiones y separación entre callbacks. Se vuelca al finalizar para no escribir durante la prueba.
-- Grabación FIT opcional para comparar la carga del sistema durante una actividad. Es solo una prueba básica de grabación; GPS, sensores y vueltas corresponden a fases posteriores.
-- Pruebas del motor para ejecutar con el SDK y analizador de registros ejecutable con Node.
+- Calentamiento → esfuerzos y recuperaciones → enfriamiento → finalización.
+- Cronología absoluta desde un reloj monotónico: una transición tardía no desplaza los objetivos posteriores.
+- Origen planificado propio para cada esfuerzo y avisos con décimas de segundo.
+- Avisos de 100 m solo durante esfuerzos. El tono de cambio de fase reemplaza el aviso coincidente con el final del esfuerzo, para evitar dos sonidos simultáneos.
+- Ante callbacks perdidos, solo se solicita el último aviso vencido de la fase vigente. Las fases vencidas no se reproducen; se cuentan las marcas interiores omitidas.
+- Pantalla básica con fase, repetición, tiempo restante, siguiente marca, ritmo e intervalo.
 
-START inicia; UP cambia el intervalo; DOWN activa/desactiva FIT; BACK termina anticipadamente y guarda el FIT si está activo. Otro BACK sale. No existe pausa/reanudación en el laboratorio: cada ejecución usa un origen nuevo. Las pruebas no tienen calentamiento ni recuperación. No se generan sonidos de transición para evitar confundir el recuento acústico.
+Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia o reinicia; BACK termina la sesión; otro BACK sale. No hay pausa.
 
-Si faltan callbacks, se registran las marcas antiguas como `SKIPPED` y se solicita solo la última vencida, siempre que no lleve un intervalo entero de retraso. Un estado `COMPLETO` significa que se procesaron las 20 marcas, no garantiza 20 solicitudes ni 20 sonidos. Una omisión invalida la prueba para evaluar 20 avisos consecutivos.
+El plan está definido en `source/WorkoutController.mc`; todavía no existe editor ni persistencia. Esta entrega admite distancias positivas múltiplos de 100 m e intervalos positivos múltiplos de 100 ms. La aplicación de entrenamiento todavía no graba FIT: la actividad continua, GPS, frecuencia cardíaca y vueltas corresponden a la fase 3.
 
-## Preparación y compilación
+## Compilar
 
-1. Instalar el [SDK oficial de Connect IQ](https://developer.garmin.com/connect-iq/sdk/), el Java requerido por esa versión y la extensión Monkey C de VS Code.
-2. Descargar el dispositivo Forerunner 970 con SDK Manager y configurar una clave privada de desarrollador mediante la extensión. No guardar la clave en este proyecto.
-3. Abrir esta carpeta en VS Code, compilar y ejecutar en el simulador para `fr970`. Revisar errores, recursos, botones y pantalla antes de copiar al reloj.
-4. Alternativamente, con rutas reales al SDK y clave:
+Requiere Connect IQ SDK, dispositivo `fr970`, Java en PATH y clave de desarrollador fuera del control de versiones. El equipo dispone de SDK 9.3.0 y Java 21; configurar sus rutas en cada terminal.
 
 ```powershell
-.\tools\build.ps1 -SdkPath 'C:\ruta\al\sdk' -DeveloperKey 'C:\ruta\privada\developer_key.der'
-.\tools\build.ps1 -SdkPath 'C:\ruta\al\sdk' -DeveloperKey 'C:\ruta\privada\developer_key.der' -Tests
+.\tools\build.ps1 -SdkPath 'C:\ruta\al\sdk' -DeveloperKey 'C:\ruta\privada\developer_key'
+.\tools\build.ps1 -SdkPath 'C:\ruta\al\sdk' -DeveloperKey 'C:\ruta\privada\developer_key' -Tests
 ```
 
-Para las pruebas Monkey C usar la función de pruebas de la extensión, o iniciar el simulador y ejecutar `monkeydo bin\RunIntervalsLab-tests.prg fr970 -t` desde el entorno del SDK. Las pruebas ejercitan el motor real, pero no el altavoz ni el temporizador del dispositivo.
+Resultados: `bin/RunIntervals.prg` y `bin/RunIntervals-tests.prg`. Con el simulador abierto, ejecutar desde el SDK:
 
-5. Copiar `bin/RunIntervalsLab.prg` a `GARMIN/APPS` del reloj mediante USB. Antes de desconectar, crear un archivo vacío `GARMIN/APPS/LOGS/RunIntervalsLab.TXT`. El nombre base debe coincidir con el PRG. Consultar la guía oficial de [instalación de prueba](https://developer.garmin.com/connect-iq/connect-iq-basics/your-first-app/) y [depuración](https://developer.garmin.com/connect-iq/core-topics/debugging/).
-6. Ejecutar el [protocolo físico](docs/PROTOCOLO.md) y copiar el registro al equipo al terminar. El búfer se pierde si el sistema cierra la aplicación de forma abrupta antes del volcado; una prueba sin `RI_END` es incompleta.
+```powershell
+monkeydo.bat bin\RunIntervals-tests.prg fr970 /t
+```
 
-## Analizar los registros
+Las pruebas Monkey C cubren objetivos absolutos, límites de fase, cambios de intervalo, omisiones, finalización, configuración inválida y desbordamiento del contador. Compilar el paquete de pruebas no equivale a ejecutarlo.
+
+Para instalar en el reloj, copiar `bin/RunIntervals.prg` a `GARMIN/APPS`. Validar primero en simulador y después comprobar las transiciones en el 970 físico.
+
+## Laboratorio conservado
+
+El laboratorio mantiene su identidad de aplicación y puede coexistir con la versión de entrenamiento. Compilar con `-Lab` (y opcionalmente `-Tests`) produce `RunIntervalsLab.prg` o `RunIntervalsLab-tests.prg`. El protocolo y los controles originales están en [LABORATORIO.md](docs/LABORATORIO.md).
 
 ```powershell
 node --test tests/analyze-log.test.mjs
-node tools/analyze-log.mjs 'C:\ruta\RunIntervalsLab.TXT'
 ```
 
-El analizador comprueba cada objetivo contra la fórmula, rechaza registros truncados y distingue solicitudes, errores y omisiones. Calcula retrasos de solicitud y cambio entre el primer y último retraso; esto último no demuestra por sí solo una deriva. Sus pruebas usan datos sintéticos, nunca mediciones del reloj.
-
-## Orden del proyecto
-
-La fase 1 permanece pendiente hasta compilar, probar y medir en el 970 físico. Después: motor automático de esfuerzos/recuperaciones; FIT continuo con GPS, frecuencia cardíaca y vueltas; interfaz y editor; perfiles guardados; pruebas de pista. No avanzar al producto completo sin evaluar primero los resultados de precisión. Los requisitos completos y las decisiones técnicas están en `docs/`.
+Los [requisitos](docs/REQUISITOS.md) conservan el alcance completo. Próximas etapas: FIT continuo y vueltas; interfaz y editor; perfiles guardados; validación en pista.

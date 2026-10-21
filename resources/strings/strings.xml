@@ -1,1 +1,4 @@
-<strings><string id="AppName">RunIntervals Lab</string></strings>
+<strings>
+    <string id="AppName">RunIntervals</string>
+    <string id="LabName">RunIntervals Lab</string>
+</strings>
