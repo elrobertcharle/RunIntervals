@@ -4,18 +4,38 @@ import Toybox.Timer;
 import Toybox.WatchUi;
 
 class WorkoutController {
-    var repetitions = [[400, 23000, 60000], [400, 22700, 60000], [400, 22400, 60000], [400, 22100, 0]];
+    var plan;
+    var repetitions;
     var engine;
     var timer;
     var running = false;
     var status = "READY";
     var lastUi = 0;
     var recording;
+    var finishedMs = 0;
 
     function initialize() {
+        plan = new WorkoutPlan();
+        repetitions = plan.repetitions;
         timer = new Timer.Timer();
         recording = new WorkoutRecording();
         recording.prepare();
+    }
+    function applyPlan(draft) {
+        if (running || recording.pending()) { return false; }
+        // Validate the entire timeline before replacing the session.
+        try { draft.timeline(); } catch (e) { return false; }
+        plan = draft.copy();
+        repetitions = plan.repetitions;
+        engine = null;
+        status = "READY";
+        recording.prepare();
+        return true;
+    }
+    function edit() {
+        if (running || recording.pending()) { return; }
+        var editor = new WorkoutEditor(self);
+        WatchUi.pushView(editor, new WorkoutEditorDelegate(editor), WatchUi.SLIDE_IMMEDIATE);
     }
     function start() {
         if (running) { return; }
@@ -32,11 +52,12 @@ class WorkoutController {
         if (!(Attention has :playTone)) { status = "NO SOUND"; WatchUi.requestUpdate(); return; }
         try {
             recording.prepare();
-            engine = new WorkoutEngine(repetitions, 60000, 60000, System.getTimer());
+            engine = new WorkoutEngine(repetitions, plan.warmupMs, plan.cooldownMs, System.getTimer());
             if (!recording.start(engine.phases)) { finish("START ERROR"); return; }
             // Plan construction and FIT field setup happen before the timing origin.
             engine.clock.origin = System.getTimer();
             lastUi = 0;
+            finishedMs = 0;
             running = true;
             status = "IN PROGRESS";
             timer.start(method(:onTick), 50, true);
@@ -64,6 +85,10 @@ class WorkoutController {
         if (event[0] || now - lastUi >= 250) { lastUi = now; WatchUi.requestUpdate(); }
     }
     function finish(reason) {
+        if (running && engine != null) {
+            finishedMs = engine.elapsed(System.getTimer());
+            if (finishedMs > engine.totalMs) { finishedMs = engine.totalMs; }
+        }
         running = false;
         timer.stop();
         status = reason;
