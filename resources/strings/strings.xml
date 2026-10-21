@@ -1,4 +1,12 @@
 <strings>
     <string id="AppName">RunIntervals</string>
     <string id="LabName">RunIntervals Lab</string>
+    <string id="FitPhase">Phase type</string>
+    <string id="FitRep">Repetition</string>
+    <string id="FitTarget">Target duration</string>
+    <string id="FitInterval">100 m interval</string>
+    <string id="FitLapErrors">Lap errors</string>
+    <string id="FitMissed">Missed boundaries</string>
+    <string id="FitSeconds">s</string>
+    <string id="FitNoUnits"></string>
 </strings>

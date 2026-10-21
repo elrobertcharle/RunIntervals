@@ -20,15 +20,22 @@ class WorkoutController {
     function start() {
         if (running) { return; }
         if (recording.pending()) {
-            recording.finish();
+            recording.finish(null);
+            WatchUi.requestUpdate();
+            return;
+        }
+        if (!recording.canStart(System.getTimer())) {
+            status = "PLEASE WAIT";
             WatchUi.requestUpdate();
             return;
         }
         if (!(Attention has :playTone)) { status = "NO SOUND"; WatchUi.requestUpdate(); return; }
         try {
             recording.prepare();
-            if (!recording.start()) { finish("START ERROR"); return; }
             engine = new WorkoutEngine(repetitions, 60000, 60000, System.getTimer());
+            if (!recording.start(engine.phases)) { finish("START ERROR"); return; }
+            // Plan construction and FIT field setup happen before the timing origin.
+            engine.clock.origin = System.getTimer();
             lastUi = 0;
             running = true;
             status = "IN PROGRESS";
@@ -60,14 +67,15 @@ class WorkoutController {
         running = false;
         timer.stop();
         status = reason;
-        recording.finish();
+        recording.finish(reason);
         recording.release();
         WatchUi.requestUpdate();
     }
     function shutdown() {
+        var reason = running ? "APP STOP" : null;
         running = false;
         timer.stop();
-        recording.finish();
+        recording.finish(reason);
         recording.release();
     }
 }

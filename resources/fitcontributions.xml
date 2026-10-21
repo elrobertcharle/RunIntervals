@@ -1,0 +1,10 @@
+<resources>
+    <fitContributions>
+        <fitField id="1" displayInActivityLaps="true" precision="0" sortOrder="0" dataLabel="@Strings.FitPhase" unitLabel="@Strings.FitNoUnits" />
+        <fitField id="2" displayInActivityLaps="true" precision="0" sortOrder="1" dataLabel="@Strings.FitRep" unitLabel="@Strings.FitNoUnits" />
+        <fitField id="3" displayInActivityLaps="true" precision="1" sortOrder="2" dataLabel="@Strings.FitTarget" unitLabel="@Strings.FitSeconds" />
+        <fitField id="4" displayInActivityLaps="true" precision="1" sortOrder="3" dataLabel="@Strings.FitInterval" unitLabel="@Strings.FitSeconds" />
+        <fitField id="6" displayInActivitySummary="true" precision="0" sortOrder="4" dataLabel="@Strings.FitLapErrors" unitLabel="@Strings.FitNoUnits" />
+        <fitField id="7" displayInActivitySummary="true" precision="0" sortOrder="5" dataLabel="@Strings.FitMissed" unitLabel="@Strings.FitNoUnits" />
+    </fitContributions>
+</resources>

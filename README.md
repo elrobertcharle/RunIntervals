@@ -45,3 +45,5 @@ node --test tests/analyze-log.test.mjs
 ```
 
 Los [requisitos](docs/REQUISITOS.md) conservan el alcance completo. Fase 2 validada por el usuario en el reloj. Fase 3 implementada y pendiente de validación física del FIT. Próximas etapas: interfaz y editor; perfiles guardados; validación en pista.
+
+La fase 3 añade ahora nombres de fase, objetivos y resultado de la sesión como campos FIT de desarrollador. Detalles y límites en [FIT-METADATA.md](docs/FIT-METADATA.md).

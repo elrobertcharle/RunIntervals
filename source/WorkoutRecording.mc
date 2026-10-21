@@ -2,6 +2,7 @@ import Toybox.Activity;
 import Toybox.ActivityRecording;
 import Toybox.Position;
 import Toybox.Sensor;
+import Toybox.System;
 import Toybox.WatchUi;
 
 // FIT lifecycle kept separate from the absolute workout timeline.
@@ -15,9 +16,13 @@ class WorkoutRecording {
     var heartRate;
     var sensorsActive = false;
     var sensorWarning = false;
+    var metadata;
+    var saveClock;
 
     function initialize() {}
     function pending() { return session != null; }
+    // Give native recording a moment to finalize before another start request.
+    function canStart(tick) { return saveClock == null || saveClock.elapsed(tick) >= 1000; }
 
     function prepare() {
         if (sensorsActive) { return; }
@@ -52,15 +57,20 @@ class WorkoutRecording {
     function createSession() {
         return ActivityRecording.createSession({:name=>"RunIntervals", :sport=>Activity.SPORT_RUNNING, :subSport=>Activity.SUB_SPORT_GENERIC});
     }
-    function start() {
-        if (pending()) { return false; }
+    function start(phases) {
+        if (pending() || !canStart(System.getTimer())) { return false; }
         phaseIndex = 0;
         lapErrors = 0;
         missedBoundaries = 0;
+        metadata = null;
         state = "FIT START ERROR";
         try {
             session = createSession();
-            if (session != null && session.start()) { state = "RECORDING"; return true; }
+            if (session != null && session.start()) {
+                if (phases != null) { metadata = new WorkoutFitMetadata(session, phases); }
+                state = "RECORDING";
+                return true;
+            }
         } catch (e) {}
         // Keep even an unstarted session available for save/retry; never discard data.
         return false;
@@ -70,20 +80,31 @@ class WorkoutRecording {
         // addLap has no timestamp argument. Do not fabricate historical laps.
         missedBoundaries += index - phaseIndex - 1;
         phaseIndex = index;
-        try { if (!session.addLap()) { lapErrors += 1; } }
-        catch (e) { lapErrors += 1; }
+        var success = false;
+        try {
+            if (metadata != null) { metadata.writeLap(index); }
+            success = session.addLap();
+        } catch (e) {}
+        if (!success) { lapErrors += 1; }
+        if (metadata != null) { metadata.lapResult(index, success); }
     }
     function completed(index) {
         // stop/save closes the final lap. Count earlier boundaries missed by a late callback.
         if (index > phaseIndex) { missedBoundaries += index - phaseIndex - 1; }
         phaseIndex = index;
+        if (metadata != null) { metadata.endIndex = index; }
     }
-    function finish() {
+    function finish(reason) {
         if (!pending()) { return true; }
         try {
-            if (session.isRecording() && !session.stop()) { state = "FIT STOP ERROR"; return false; }
+            if (session.isRecording()) {
+                if (metadata != null) { metadata.finish(reason, lapErrors, missedBoundaries); }
+                if (!session.stop()) { state = "FIT STOP ERROR"; return false; }
+            }
             if (!session.save()) { state = "FIT SAVE ERROR"; return false; }
             session = null;
+            metadata = null;
+            saveClock = new DeadlineEngine(1, 1, System.getTimer());
             state = "FIT SAVED";
             return true;
         } catch (e) { state = "FIT ERROR"; return false; }

@@ -11,7 +11,7 @@ La fase 2 fue probada satisfactoriamente en el Forerunner 970 según confirmaci�
 - Un fallo de stop/save conserva la sesión en memoria y bloquea un nuevo entrenamiento. START o BACK reintenta guardarla. onStop realiza otro intento al cerrar la aplicación. No se descarta la actividad automáticamente. Un cierre forzado, batería agotada o fallo persistente del sistema no garantiza recuperación.
 - Los errores de vueltas se muestran al terminar. addLap no permite fechar vueltas en el pasado: un callback que cruce varias fases crea como máximo una vuelta actual y contabiliza límites omitidos como Saltos. No se reconstruyen vueltas ficticias. Esto no cambia los objetivos temporales del motor.
 
-Los datos reales de distancia, velocidad/ritmo, GPS y FC dependen del dispositivo, la señal y los sensores. Los metros planificados de los esfuerzos no se inyectan como distancia medida. Las vueltas son vueltas normales de carrera; se identifican por orden, sin prometer etiquetas nativas de entrenamiento ni métricas avanzadas de Garmin.
+Los datos reales de distancia, velocidad/ritmo, GPS y FC dependen del dispositivo, la señal y los sensores. Los metros planificados de los esfuerzos no se inyectan como distancia medida. Las vueltas siguen siendo vueltas normales de carrera. La nueva versión añade identificación y objetivos mediante campos de desarrollador; véase [FIT-METADATA.md](FIT-METADATA.md). No se prometen etiquetas nativas de entrenamiento ni métricas avanzadas de Garmin.
 
 ## Prueba física
 
@@ -48,4 +48,4 @@ También se consultó el ejemplo RecordSample del SDK instalado para activación
 
 ## Idioma de la aplicación
 
-La interfaz de RunIntervals se muestra en inglés, incluidos WARM-UP, EFFORT, RECOVERY, COOL-DOWN y FIT SAVED. El nombre de la sesión FIT sigue siendo RunIntervals; los datos estándar se guardan como valores numéricos y enumeraciones. La aplicación no escribe etiquetas de fase en español en el FIT. Las etiquetas generadas por Garmin Connect y los avisos nativos del reloj siguen los ajustes de idioma de Garmin.
+La interfaz de RunIntervals se muestra en inglés, incluidos WARM-UP, EFFORT, RECOVERY, COOL-DOWN y FIT SAVED. El nombre de la sesión FIT sigue siendo RunIntervals; los datos estándar se guardan como valores numéricos y enumeraciones. La aplicación añade nombres de fase en inglés al FIT mediante campos de desarrollador. Las etiquetas generadas por Garmin Connect y los avisos nativos del reloj siguen los ajustes de idioma de Garmin.
