@@ -13,9 +13,9 @@ La primera etapa de precisión está completada según confirmación del usuario
 - Ante callbacks perdidos, solo se solicita el último aviso vencido de la fase vigente. Las fases vencidas no se reproducen; se cuentan las marcas interiores omitidas.
 - Pantalla básica con fase, repetición, tiempo restante, siguiente marca, ritmo e intervalo.
 
-Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia o reinicia; BACK termina la sesión; otro BACK sale. No hay pausa.
+Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia o reinicia; BACK termina y guarda la sesión; otro BACK sale si no hay guardado pendiente. No hay pausa.
 
-El plan está definido en `source/WorkoutController.mc`; todavía no existe editor ni persistencia. Esta entrega admite distancias positivas múltiplos de 100 m e intervalos positivos múltiplos de 100 ms. La aplicación de entrenamiento todavía no graba FIT: la actividad continua, GPS, frecuencia cardíaca y vueltas corresponden a la fase 3.
+El plan está definido en `source/WorkoutController.mc`; todavía no existe editor ni persistencia. Esta entrega admite distancias positivas múltiplos de 100 m e intervalos positivos múltiplos de 100 ms. La fase 3 añade una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. BACK guarda la actividad parcial. Véanse el comportamiento de errores y el protocolo en [FASE3.md](docs/FASE3.md).
 
 ## Compilar
 
@@ -44,4 +44,4 @@ El laboratorio mantiene su identidad de aplicación y puede coexistir con la ver
 node --test tests/analyze-log.test.mjs
 ```
 
-Los [requisitos](docs/REQUISITOS.md) conservan el alcance completo. Próximas etapas: FIT continuo y vueltas; interfaz y editor; perfiles guardados; validación en pista.
+Los [requisitos](docs/REQUISITOS.md) conservan el alcance completo. Fase 2 validada por el usuario en el reloj. Fase 3 implementada y pendiente de validación física del FIT. Próximas etapas: interfaz y editor; perfiles guardados; validación en pista.

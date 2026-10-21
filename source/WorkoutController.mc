@@ -10,12 +10,24 @@ class WorkoutController {
     var running = false;
     var status = "LISTO";
     var lastUi = 0;
+    var recording;
 
-    function initialize() { timer = new Timer.Timer(); }
+    function initialize() {
+        timer = new Timer.Timer();
+        recording = new WorkoutRecording();
+        recording.prepare();
+    }
     function start() {
         if (running) { return; }
+        if (recording.pending()) {
+            recording.finish();
+            WatchUi.requestUpdate();
+            return;
+        }
         if (!(Attention has :playTone)) { status = "SIN SONIDO"; WatchUi.requestUpdate(); return; }
         try {
+            recording.prepare();
+            if (!recording.start()) { finish("ERROR INICIO"); return; }
             engine = new WorkoutEngine(repetitions, 60000, 60000, System.getTimer());
             lastUi = 0;
             running = true;
@@ -30,14 +42,17 @@ class WorkoutController {
         var event = engine.update(tick);
         try {
             if (engine.done()) {
-                finish("COMPLETO");
                 Attention.playTone(Attention.TONE_SUCCESS);
+                recording.completed(engine.index);
+                finish("COMPLETO");
                 return;
             }
             // Only the current phase can produce a reference tone.
             if (event[1]) { Attention.playTone(Attention.TONE_LOUD_BEEP); }
             else if (event[0]) { Attention.playTone(Attention.TONE_INTERVAL_ALERT); }
         } catch (e) { finish("ERROR SONIDO"); return; }
+        // Sound is requested first; disk-related lap work cannot delay that request.
+        if (event[0]) { recording.phaseChanged(engine.index); }
         var now = engine.elapsed(tick);
         if (event[0] || now - lastUi >= 250) { lastUi = now; WatchUi.requestUpdate(); }
     }
@@ -45,6 +60,14 @@ class WorkoutController {
         running = false;
         timer.stop();
         status = reason;
+        recording.finish();
+        recording.release();
         WatchUi.requestUpdate();
+    }
+    function shutdown() {
+        running = false;
+        timer.stop();
+        recording.finish();
+        recording.release();
     }
 }

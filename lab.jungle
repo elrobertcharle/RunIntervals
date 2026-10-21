@@ -1,3 +1,3 @@
 project.manifest = lab-manifest.xml
-base.sourcePath = source;tests
+base.sourcePath = source/LabApp.mc;source/DeadlineEngine.mc;source/PrecisionProbe.mc;source/ProbeView.mc;tests/DeadlineEngineTest.mc
 base.resourcePath = resources
