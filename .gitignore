@@ -2,4 +2,5 @@ bin/
 *.prg
 *.prg.debug.xml
 *.der
+developer_key
 measurements/
