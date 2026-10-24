@@ -1,6 +1,18 @@
 # Fase 5: perfiles guardados y edición individual
 
 Implementación disponible para el FR970. Interfaz en inglés, sin pausa.
+Actualización de controles: START inicia y, durante el entrenamiento, detiene.
+El final automático también detiene y abre el menú `ACTIVITY STOPPED`.
+UP/DOWN elige `Save` o `Discard`; START selecciona. Save guarda; Discard pide
+una segunda confirmación con START y BACK la cancela. BACK en el menú vuelve
+al resumen sin guardar ni descartar; START en el resumen reabre el menú con Save
+seleccionado. Durante el entrenamiento BACK no hace cambios. No hay reanudación.
+La actividad pendiente bloquea nuevas sesiones, la edición y la salida con BACK
+hasta guardar o descartar. No se guarda automáticamente al cerrar la app y un
+cierre forzoso no garantiza recuperar una actividad pendiente. El flujo sustituye
+las referencias anteriores a finalizar o guardar con BACK. Pruebas actualizadas:
+28/28 aprobadas en el simulador, incluidos cancelación de descarte, fallos al
+detener/guardar/descartar, reintentos y cierre sin guardar.
 La validación manual de la nueva interfaz en simulador y reloj sigue pendiente;
 esta fase no se considera validada físicamente.
 
@@ -86,6 +98,12 @@ prueba manual de cerrar/reabrir la aplicación ni la comprobación en el reloj f
 6. Cancelar una confirmación de borrado con BACK; después borrar Slot 2 y confirmar
    que Slot 1, la sesión activa y el borrador siguen intactos.
 7. Revisar legibilidad de todas las pantallas en el círculo del FR970 y probar
-   reinicio de la aplicación, FIT continuo y BACK para guardar una actividad parcial.
+   reinicio de la aplicación, FIT continuo y START para terminar una actividad parcial.
+   Comprobar que BACK durante el entrenamiento no lo detiene. Elegir Save con
+   START y verificar FIT parcial. Repetir al completar una sesión automáticamente.
+8. En otra sesión, detener con START, elegir Discard con UP/DOWN y START;
+   cancelar con BACK y verificar que sigue pendiente. Volver a elegir Discard y
+   confirmar con START; comprobar que no aparece una actividad guardada y que
+   se puede iniciar otra sesión. Los perfiles guardados deben permanecer intactos.
 
 La latencia audible, el FIT físico y la validación en pista siguen pendientes.

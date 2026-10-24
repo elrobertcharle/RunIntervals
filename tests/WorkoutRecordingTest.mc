@@ -12,6 +12,9 @@ class FakeWorkoutSession {
     var saveOk = true;
     var lapOk = true;
     var throwSave = false;
+    var discards = 0;
+    var discardOk = true;
+    var throwDiscard = false;
     var fields = [];
     var capturedLaps = [];
     var capturedResult;
@@ -24,6 +27,11 @@ class FakeWorkoutSession {
         if (fields.size() > 0) { capturedResult = fields[5].value; }
         if (throwSave) { throw new Toybox.Lang.InvalidValueException("save"); }
         return saveOk;
+    }
+    function discard() {
+        discards += 1;
+        if (throwDiscard) { throw new Toybox.Lang.InvalidValueException("discard"); }
+        return discardOk;
     }
     function createField(name, id, type, options) {
         var field = new FakeWorkoutField();

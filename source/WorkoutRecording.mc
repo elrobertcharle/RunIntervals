@@ -72,7 +72,7 @@ class WorkoutRecording {
                 return true;
             }
         } catch (e) {}
-        // Keep even an unstarted session available for save/retry; never discard data.
+        // Keep even an unstarted session for an explicit save/discard decision.
         return false;
     }
     function phaseChanged(index) {
@@ -94,13 +94,21 @@ class WorkoutRecording {
         phaseIndex = index;
         if (metadata != null) { metadata.endIndex = index; }
     }
-    function finish(reason) {
+    function stop(reason) {
         if (!pending()) { return true; }
         try {
             if (session.isRecording()) {
                 if (metadata != null) { metadata.finish(reason, lapErrors, missedBoundaries); }
                 if (!session.stop()) { state = "FIT STOP ERROR"; return false; }
             }
+            state = "FIT NOT SAVED";
+            return true;
+        } catch (e) { state = "FIT STOP ERROR"; return false; }
+    }
+    function finish(reason) {
+        if (!pending()) { return true; }
+        if (!stop(reason)) { return false; }
+        try {
             if (!session.save()) { state = "FIT SAVE ERROR"; return false; }
             session = null;
             metadata = null;
@@ -108,5 +116,17 @@ class WorkoutRecording {
             state = "FIT SAVED";
             return true;
         } catch (e) { state = "FIT ERROR"; return false; }
+    }
+    function discard() {
+        if (!pending()) { return true; }
+        if (!stop(null)) { return false; }
+        try {
+            if (!session.discard()) { state = "FIT DISCARD ERROR"; return false; }
+            session = null;
+            metadata = null;
+            saveClock = new DeadlineEngine(1, 1, System.getTimer());
+            state = "FIT DISCARDED";
+            return true;
+        } catch (e) { state = "FIT DISCARD ERROR"; return false; }
     }
 }

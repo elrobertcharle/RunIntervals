@@ -13,9 +13,11 @@ La primera etapa de precisión está completada según confirmación del usuario
 - Ante callbacks perdidos, solo se solicita el último aviso vencido de la fase vigente. Las fases vencidas no se reproducen; se cuentan las marcas interiores omitidas.
 - Pantalla básica con fase, repetición, tiempo restante, siguiente marca, ritmo e intervalo.
 
-Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia o reinicia; BACK termina y guarda la sesión; otro BACK sale si no hay guardado pendiente. No hay pausa.
+Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia y, durante el entrenamiento, detiene. No hay pausa/reanudación.
 
-La fase 4 añade un editor en el reloj (UP o MENU antes de iniciar), un borrador con aplicar/cancelar y una pantalla de entrenamiento con cuenta regresiva grande y progreso por fase. Controles y límites en [FASE4.md](docs/FASE4.md). La fase 5 conserva la última sesión aplicada al salir, añade tres perfiles persistentes y permite editar distancia, intervalo y recuperación por repetición. Uso y protocolo en [FASE5.md](docs/FASE5.md). La fase 3 conserva una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. BACK guarda la actividad parcial. Véanse el comportamiento de errores y el protocolo en [FASE3.md](docs/FASE3.md).
+Al terminar automáticamente o con START, se detiene la grabación y aparece `ACTIVITY STOPPED`, con `Save` seleccionado por defecto. UP/DOWN elige `Save` o `Discard`; START selecciona. `Save` guarda la actividad. `Discard` abre una segunda confirmación: START descarta y BACK cancela el descarte. BACK desde el menú vuelve al resumen sin guardar ni descartar; START desde el resumen reabre el menú. Durante el entrenamiento BACK no detiene ni guarda. La actividad pendiente bloquea nuevas sesiones, la edición y la salida con BACK hasta guardarla o descartarla. Cerrar forzosamente la aplicación no guarda automáticamente y no garantiza recuperar una actividad sin confirmar. Este cambio está verificado con 28 pruebas aprobadas en el simulador; falta validarlo en el reloj.
+
+La fase 4 añade un editor en el reloj (UP o MENU antes de iniciar), un borrador con aplicar/cancelar y una pantalla de entrenamiento con cuenta regresiva grande y progreso por fase. Controles y límites en [FASE4.md](docs/FASE4.md). La fase 5 conserva la última sesión aplicada al salir, añade tres perfiles persistentes y permite editar distancia, intervalo y recuperación por repetición. Uso y protocolo en [FASE5.md](docs/FASE5.md). La fase 3 conserva una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. START permite terminar la actividad parcial y elegir guardar o descartar. El flujo de guardado descrito en documentos de fases anteriores queda sustituido por el indicado arriba.
 
 ## Compilar
 
@@ -35,6 +37,24 @@ monkeydo.bat bin\RunIntervals-tests.prg fr970 /t
 Las pruebas Monkey C cubren objetivos absolutos, límites de fase, cambios de intervalo, omisiones, finalización, configuración inválida y desbordamiento del contador. Compilar el paquete de pruebas no equivale a ejecutarlo.
 
 Para instalar en el reloj, copiar `bin/RunIntervals.prg` a `GARMIN/APPS`. Validar primero en simulador y después comprobar las transiciones en el 970 físico.
+
+## Iniciar el simulador en Windows
+
+Desde PowerShell, abrir el simulador como un proceso independiente:
+
+```powershell
+cd C:\Users\merom\source\repos\RunIntervals
+$sdk = (Get-Content "$env:APPDATA\Garmin\ConnectIQ\current-sdk.cfg" -Raw).Trim()
+Start-Process -FilePath "$sdk\bin\simulator.exe"
+```
+
+Cuando aparezca la ventana del simulador, cargar la aplicación desde la misma terminal:
+
+```powershell
+& "$sdk\bin\monkeydo.bat" .\bin\RunIntervals.prg fr970
+```
+
+`Start-Process` deja la terminal disponible sin pulsar Ctrl+C. La variable `$sdk` debe definirse de nuevo al abrir otra terminal. La ventana gris inicial del simulador es normal hasta cargar la aplicación. Pulsar START para iniciar el entrenamiento, o UP/MENU para editar la sesión antes de empezar.
 
 ## Laboratorio conservado
 

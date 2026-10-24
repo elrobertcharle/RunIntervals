@@ -14,6 +14,9 @@ class WorkoutController {
     var lastUi = 0;
     var recording;
     var finishedMs = 0;
+    var confirmSave = false;
+    var endChoice = 0; // 0 = save, 1 = discard
+    var confirmDiscard = false;
 
     function initialize() {
         profiles = new WorkoutProfiles();
@@ -45,9 +48,22 @@ class WorkoutController {
         WatchUi.pushView(editor, new WorkoutEditorDelegate(editor), WatchUi.SLIDE_IMMEDIATE);
     }
     function start() {
-        if (running) { return; }
+        if (running) { finish("CANCELLED"); return; }
         if (recording.pending()) {
-            recording.finish(null);
+            if (!confirmSave) {
+                confirmSave = true;
+                endChoice = 0;
+                confirmDiscard = false;
+            }
+            else if (endChoice == 1 && !confirmDiscard) { confirmDiscard = true; }
+            else {
+                if (endChoice == 1) { recording.discard(); }
+                else { recording.finish(null); }
+                if (!recording.pending()) {
+                    confirmSave = false;
+                    confirmDiscard = false;
+                }
+            }
             WatchUi.requestUpdate();
             return;
         }
@@ -65,10 +81,18 @@ class WorkoutController {
             engine.clock.origin = System.getTimer();
             lastUi = 0;
             finishedMs = 0;
+            confirmSave = false;
+            confirmDiscard = false;
+            endChoice = 0;
             running = true;
             status = "IN PROGRESS";
             timer.start(method(:onTick), 50, true);
         } catch (e) { finish("START ERROR"); }
+        WatchUi.requestUpdate();
+    }
+    function chooseEnd(direction) {
+        if (running || !recording.pending() || !confirmSave || confirmDiscard) { return; }
+        endChoice = (endChoice + direction + 2) % 2;
         WatchUi.requestUpdate();
     }
     function onTick() {
@@ -99,7 +123,10 @@ class WorkoutController {
         running = false;
         timer.stop();
         status = reason;
-        recording.finish(reason);
+        recording.stop(reason);
+        confirmSave = recording.pending();
+        endChoice = 0;
+        confirmDiscard = false;
         recording.release();
         WatchUi.requestUpdate();
     }
@@ -107,7 +134,7 @@ class WorkoutController {
         var reason = running ? "APP STOP" : null;
         running = false;
         timer.stop();
-        recording.finish(reason);
+        recording.stop(reason);
         recording.release();
     }
 }
