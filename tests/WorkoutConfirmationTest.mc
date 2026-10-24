@@ -1,4 +1,5 @@
 import Toybox.Test;
+import Toybox.System;
 
 (:test)
 class ConfirmationTimer {
@@ -21,10 +22,39 @@ class ConfirmationController extends WorkoutController {
         repetitions = plan.repetitions;
         timer = new ConfirmationTimer();
         recording = new ConfirmationRecording(f);
-        engine = new WorkoutEngine([[100,1000,0]],0,0,0);
+        engine = new WorkoutEngine([[100,1000,0]],1000,0,System.getTimer());
         recording.start(engine.phases);
         running = true;
     }
+}
+
+(:test)
+function lapButtonClosesOnlyEffort(logger) {
+    var f = new FakeWorkoutSession();
+    var w = new ConfirmationController(f);
+    w.engine = new WorkoutEngine([[400,23000,60000],[400,23000,0]],0,1000,System.getTimer() - 95000);
+    f.fields = [];
+    w.recording.metadata = new WorkoutFitMetadata(f, w.engine.phases);
+    var delegate = new WorkoutDelegate(w);
+    delegate.onBack();
+    Test.assert(w.running && w.engine.phase()[0].equals("RECOVERY"));
+    Test.assert(f.laps == 1 && f.stops == 0 && f.saves == 0);
+    Test.assert(w.engine.effortResults[0][1] >= 95000);
+    delegate.onBack();
+    Test.assert(w.engine.index == 1 && f.laps == 1);
+    // Without cool-down the final LAP stops recording and asks to save.
+    f = new FakeWorkoutSession();
+    w = new ConfirmationController(f);
+    w.engine = new WorkoutEngine([[100,1000,0]],0,0,System.getTimer() - 3500);
+    f.fields = [];
+    w.recording.metadata = new WorkoutFitMetadata(f, w.engine.phases);
+    delegate = new WorkoutDelegate(w);
+    delegate.onBack();
+    Test.assert(!w.running && w.engine.done() && w.confirmSave);
+    Test.assert(f.stops == 1 && f.saves == 0 && f.laps == 0);
+    Test.assert(w.finishedMs >= 3500 && f.fields[0].value.equals("Effort 1"));
+    Test.assert(w.recording.metadata.outcome.equals("COMPLETE"));
+    return true;
 }
 
 (:test)

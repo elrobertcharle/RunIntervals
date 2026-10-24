@@ -4,18 +4,20 @@ Aplicación Monkey C para Garmin Forerunner 970. Desarrollo de la versión defin
 
 La primera etapa de precisión está completada según confirmación del usuario. Los archivos de medición no están versionados; no se atribuyen cifras de precisión audible sin esos datos.
 
-## Fase 2: motor automático
+## Entrenamiento: esfuerzo hasta LAP
+
+Cada esfuerzo termina al pulsar LAP (botón BACK/LAP del FR970), tanto antes como después del tiempo objetivo. La pantalla muestra el tiempo transcurrido con décimas; la vuelta FIT registra la duración real. El tiempo objetivo y los avisos de 100 m sirven de guía y no terminan la repetición. La recuperación empieza al pulsar LAP y termina automáticamente; tras el último esfuerzo comienza el enfriamiento. Durante la recuperación y el enfriamiento se muestra el resultado de la última repetición. Protocolo de comprobación en [LAP-MANUAL.md](docs/LAP-MANUAL.md).
 
 - Calentamiento → esfuerzos y recuperaciones → enfriamiento → finalización.
-- Cronología absoluta desde un reloj monotónico: una transición tardía no desplaza los objetivos posteriores.
+- Reloj monotónico y objetivos absolutos dentro de cada esfuerzo. LAP ajusta el inicio de las fases posteriores al final real de la repetición.
 - Origen planificado propio para cada esfuerzo y avisos con décimas de segundo.
-- Avisos de 100 m solo durante esfuerzos. El tono de cambio de fase reemplaza el aviso coincidente con el final del esfuerzo, para evitar dos sonidos simultáneos.
-- Ante callbacks perdidos, solo se solicita el último aviso vencido de la fase vigente. Las fases vencidas no se reproducen; se cuentan las marcas interiores omitidas.
-- Pantalla básica con fase, repetición, tiempo restante, siguiente marca, ritmo e intervalo.
+- Avisos de 100 m solo durante esfuerzos, incluido el último parcial objetivo. Después del último aviso no se añaden marcas mientras se espera LAP.
+- Ante callbacks perdidos, solo se solicita el último aviso vencido del esfuerzo vigente. Ningún esfuerzo se omite automáticamente.
+- Pantalla con fase, repetición, tiempo transcurrido del esfuerzo o cuenta regresiva de recuperación, siguiente marca, ritmo e intervalo.
 
 Sesión de demostración: 1 minuto de calentamiento, 4 × 400 m con avisos cada 23,0 / 22,7 / 22,4 / 22,1 segundos, 1 minuto entre esfuerzos y 1 minuto de enfriamiento. No hay recuperación adicional después de la última repetición. START inicia y, durante el entrenamiento, detiene. No hay pausa/reanudación.
 
-Al terminar automáticamente o con START, se detiene la grabación y aparece `ACTIVITY STOPPED`, con `Save` seleccionado por defecto. UP/DOWN elige `Save` o `Discard`; START selecciona. `Save` guarda la actividad. `Discard` abre una segunda confirmación: START descarta y BACK cancela el descarte. BACK desde el menú vuelve al resumen sin guardar ni descartar; START desde el resumen reabre el menú. Durante el entrenamiento BACK no detiene ni guarda. La actividad pendiente bloquea nuevas sesiones, la edición y la salida con BACK hasta guardarla o descartarla. Cerrar forzosamente la aplicación no guarda automáticamente y no garantiza recuperar una actividad sin confirmar. Este cambio está verificado con 28 pruebas aprobadas en el simulador; falta validarlo en el reloj.
+Al terminar el enfriamiento o detener con START, se detiene la grabación y aparece `ACTIVITY STOPPED`, con `Save` seleccionado por defecto. UP/DOWN elige `Save` o `Discard`; START selecciona. `Save` guarda la actividad. `Discard` abre una segunda confirmación: START descarta y BACK cancela el descarte. BACK desde el menú vuelve al resumen sin guardar ni descartar; START desde el resumen reabre el menú. Durante el entrenamiento BACK/LAP solo cierra el esfuerzo vigente; no adelanta calentamiento, recuperación ni enfriamiento. La actividad pendiente bloquea nuevas sesiones, la edición y la salida con BACK hasta guardarla o descartarla. Cerrar forzosamente la aplicación no guarda automáticamente y no garantiza recuperar una actividad sin confirmar.
 
 La fase 4 añade un editor en el reloj (UP o MENU antes de iniciar), un borrador con aplicar/cancelar y una pantalla de entrenamiento con cuenta regresiva grande y progreso por fase. Controles y límites en [FASE4.md](docs/FASE4.md). La fase 5 conserva la última sesión aplicada al salir, añade tres perfiles persistentes y permite editar distancia, intervalo y recuperación por repetición. Uso y protocolo en [FASE5.md](docs/FASE5.md). La fase 3 conserva una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. START permite terminar la actividad parcial y elegir guardar o descartar. El flujo de guardado descrito en documentos de fases anteriores queda sustituido por el indicado arriba.
 

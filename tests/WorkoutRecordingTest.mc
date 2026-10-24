@@ -71,7 +71,8 @@ function recordingFullWorkout(logger) {
     Test.assert(!r.start(null));
     Test.assert(e.phases.size() == 9 && e.totalMs == 660800);
     for (var i = 1; i < e.phases.size(); i += 1) {
-        Test.assert(e.update(e.phases[i][1].toNumber())[0]);
+        if (e.phase()[0].equals("EFFORT")) { Test.assert(e.lap(e.phases[i][1].toNumber())); }
+        else { Test.assert(e.update(e.phases[i][1].toNumber())[0]); }
         r.phaseChanged(e.index);
         r.phaseChanged(e.index); // no duplicate laps on repeated callbacks
     }
@@ -89,6 +90,31 @@ function recordingFullWorkout(logger) {
     Test.assert(f.capturedLaps[2][0].equals("Recovery") && f.capturedLaps[2][2] == 0 && f.capturedLaps[2][4] == 0);
     Test.assert(f.fields[0].value.equals("Cool-down") && f.fields[1].value == 4);
     Test.assert(f.fields[3].value == 60.0 && f.capturedResult.equals("COMPLETE"));
+    return true;
+}
+
+(:test)
+function recordingManualEffortPreservesTarget(logger) {
+    var e = new WorkoutEngine([[400,23000,60000],[400,23000,0]],0,0,0);
+    var f = new FakeWorkoutSession();
+    var r = new FakeWorkoutRecording(f);
+    Test.assert(r.start(e.phases));
+    e.update(95000);
+    Test.assert(e.lap(95000));
+    r.phaseChanged(e.index);
+    Test.assert(f.laps == 1 && e.effortResults[0][1] == 95000);
+    Test.assert(f.capturedLaps[0][0].equals("Effort 1"));
+    Test.assert(f.capturedLaps[0][3] == 92.0); // target remains distinct from actual
+    Test.assert(e.phase()[1] == 95000 && e.phase()[2] == 155000);
+    Test.assert(e.update(155000)[0]);
+    r.phaseChanged(e.index);
+    Test.assert(f.capturedLaps[1][0].equals("Recovery") && f.capturedLaps[1][3] == 60.0);
+    Test.assert(e.lap(245000) && e.done());
+    r.completed(e.index);
+    Test.assert(r.finish("COMPLETE"));
+    Test.assert(e.effortResults[1][1] == 90000 && f.laps == 2);
+    Test.assert(f.fields[0].value.equals("Effort 2") && f.fields[3].value == 92.0);
+    Test.assert(r.missedBoundaries == 0 && r.lapErrors == 0);
     return true;
 }
 

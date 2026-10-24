@@ -16,10 +16,10 @@ function editedPlanTimeline(logger) {
     Test.assert(e.phases.size() == 4);
     Test.assert(e.phase()[0].equals("EFFORT"));
     Test.assert(e.update(22500)[1]);
-    Test.assert(e.update(180000)[0]);
+    Test.assert(e.lap(180000));
     Test.assert(e.phase()[0].equals("RECOVERY"));
     Test.assert(e.update(210000)[0] && e.phase()[3] == 1);
-    Test.assert(e.update(390000)[0] && e.phase()[0].equals("COOL-DOWN"));
+    Test.assert(e.lap(390000) && e.phase()[0].equals("COOL-DOWN"));
     Test.assert(e.update(400000)[0] && e.done());
     Test.assert(original.repetitions.size() == 4 && original.repetitions[0][0] == 400);
     Test.assert(original.repetitions[1][1] == 22700 && original.warmupMs == 60000);

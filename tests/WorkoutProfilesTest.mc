@@ -18,12 +18,12 @@ function individualRepetitionTimeline(logger) {
     var e = p.timeline();
     Test.assert(e.totalMs == 143400);
     Test.assert(e.update(22500)[1]);
-    e.update(45000);
+    e.lap(45000);
     Test.assert(e.phase()[0].equals("RECOVERY"));
     e.update(55000);
     Test.assert(e.phase()[3] == 1 && e.phase()[4] == 22100);
     Test.assert(e.update(77100)[1]);
-    e.update(143400);
+    e.lap(143400);
     Test.assert(e.done());
     return true;
 }

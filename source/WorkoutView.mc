@@ -65,29 +65,35 @@ class WorkoutView extends WatchUi.View {
         var repLabel = repIndex >= 0 ? (effort ? "REP " : "NEXT ") + (repIndex + 1) + " / " + workout.repetitions.size() : "FINISHING";
         line(dc, 0.20, Graphics.FONT_SMALL, repLabel);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        line(dc, 0.30, Graphics.FONT_NUMBER_HOT, text.duration(left));
-        line(dc, 0.47, Graphics.FONT_TINY, "REMAINING");
+        var timeLabel = effort ? text.elapsedTime(now - p[1]) : text.duration(left);
+        var timeFont = Graphics.FONT_NUMBER_HOT;
+        if (dc.getFontHeight(timeFont) > dc.getHeight() * 0.18 || dc.getTextWidthInPixels(timeLabel, timeFont) > dc.getWidth() * 0.86) { timeFont = Graphics.FONT_NUMBER_MEDIUM; }
+        if (dc.getFontHeight(timeFont) > dc.getHeight() * 0.18 || dc.getTextWidthInPixels(timeLabel, timeFont) > dc.getWidth() * 0.86) { timeFont = Graphics.FONT_NUMBER_MILD; }
+        line(dc, 0.28, timeFont, timeLabel);
+        var lastResult = e.effortResults.size() > 0 ? e.effortResults[e.effortResults.size() - 1] : null;
+        line(dc, 0.49, Graphics.FONT_TINY, effort ? "ELAPSED | LAP: end rep" : (lastResult == null ? "REMAINING" : "LAST " + (lastResult[0] + 1) + ": " + text.elapsedTime(lastResult[1])));
         if (repIndex >= 0) {
             var r = workout.repetitions[repIndex];
             if (effort) {
                 var markLeft = p[1] + e.nextMark * p[4] - now;
                 if (markLeft < 0) { markLeft = 0; }
                 var finalMark = e.nextMark >= r[0] / 100;
-                line(dc, 0.56, Graphics.FONT_SMALL, (finalMark ? "End: " : "100 m: ") + text.interval(markLeft) + " s");
+                var targetPassed = e.nextMark > r[0] / 100;
+                line(dc, 0.56, Graphics.FONT_SMALL, targetPassed ? "Target reached | LAP" : (finalMark ? "Target: " : "100 m: ") + text.interval(markLeft) + " s");
             } else { line(dc, 0.56, Graphics.FONT_SMALL, "Next: " + r[0] + " m"); }
-            line(dc, 0.68, Graphics.FONT_SMALL, text.pace(r[1]) + " | " + text.interval(r[1]) + " s");
-        } else { line(dc, 0.60, Graphics.FONT_SMALL, "Session ends automatically"); }
+            line(dc, 0.68, Graphics.FONT_TINY, text.pace(r[1]) + " | " + text.interval(r[1]) + " s");
+        } else { line(dc, 0.60, Graphics.FONT_SMALL, "Auto finish"); }
         var fit = workout.recording;
-        line(dc, 0.79, Graphics.FONT_TINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
-        line(dc, 0.86, Graphics.FONT_TINY, "START: stop");
+        line(dc, 0.79, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
+        line(dc, 0.87, Graphics.FONT_XTINY, "START: stop");
         var width = dc.getWidth() * 0.60;
         var progress = (now - p[1]).toFloat() / (p[2] - p[1]);
         if (progress < 0) { progress = 0; }
         if (progress > 1) { progress = 1; }
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
-        dc.fillRectangle(dc.getWidth() * 0.20, dc.getHeight() * 0.74, width, 4);
+        dc.fillRectangle(dc.getWidth() * 0.20, dc.getHeight() * 0.77, width, 4);
         dc.setColor(color, Graphics.COLOR_BLACK);
-        dc.fillRectangle(dc.getWidth() * 0.20, dc.getHeight() * 0.74, width * progress, 4);
+        dc.fillRectangle(dc.getWidth() * 0.20, dc.getHeight() * 0.77, width * progress, 4);
     }
 }
 class WorkoutDelegate extends WatchUi.BehaviorDelegate {
@@ -102,7 +108,7 @@ class WorkoutDelegate extends WatchUi.BehaviorDelegate {
     }
     function onNextPage() { workout.chooseEnd(1); return true; }
     function onBack() {
-        if (workout.running) { return true; }
+        if (workout.running) { workout.lap(); return true; }
         else if (workout.recording.pending()) {
             if (workout.confirmDiscard) { workout.confirmDiscard = false; }
             else { workout.confirmSave = false; }

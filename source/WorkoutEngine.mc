@@ -1,4 +1,4 @@
-// Pure timeline. All offsets are relative to one monotonic session origin.
+// All offsets use one monotonic origin. LAP rebases future phases only.
 // Repetitions: [distance in metres, milliseconds per 100 m, recovery ms].
 class WorkoutEngine {
     var phases = [];
@@ -7,6 +7,7 @@ class WorkoutEngine {
     var nextMark = 1;
     var skipped = 0;
     var totalMs = 0l;
+    var effortResults = [];
 
     function initialize(repetitions, warmupMs, cooldownMs, startTick) {
         if (repetitions.size() == 0 || warmupMs < 0 || cooldownMs < 0) {
@@ -39,17 +40,30 @@ class WorkoutEngine {
     function phase() { return done() ? null : phases[index]; }
     function elapsed(tick) { return clock.elapsed(tick); }
 
-    // Return [phase changed, reference mark]. Never replay expired phases.
-    // The end-of-effort transition replaces its coincident final 100 m tone.
+    // Keep the effort target unchanged for FIT metadata and reference marks.
+    // Recovery starts at the actual button time, whether early or late.
+    function lap(tick) {
+        if (done() || !phase()[0].equals("EFFORT")) { return false; }
+        var now = elapsed(tick);
+        var p = phase();
+        if (now < p[1]) { return false; }
+        effortResults.add([p[3], now - p[1]]);
+        var shift = now - p[2];
+        for (var i = index + 1; i < phases.size(); i += 1) {
+            phases[i][1] += shift;
+            phases[i][2] += shift;
+        }
+        totalMs += shift;
+        index += 1;
+        nextMark = 1;
+        return true;
+    }
+
+    // Return [phase changed, reference mark]. Efforts always wait for LAP.
     function update(tick) {
         var now = elapsed(tick);
         var changed = false;
-        while (!done() && now >= phase()[2]) {
-            var old = phase();
-            if (old[0].equals("EFFORT")) {
-                var remaining = ((old[2] - old[1]) / old[4]).toNumber() - nextMark;
-                if (remaining > 0) { skipped += remaining; }
-            }
+        while (!done() && !phase()[0].equals("EFFORT") && now >= phase()[2]) {
             index += 1;
             nextMark = 1;
             changed = true;
@@ -57,6 +71,8 @@ class WorkoutEngine {
         if (done() || !phase()[0].equals("EFFORT")) { return [changed, false]; }
         var p = phase();
         var due = ((now - p[1]) / p[4]).toNumber();
+        var count = ((p[2] - p[1]) / p[4]).toNumber();
+        if (due > count) { due = count; }
         if (due < nextMark) { return [changed, false]; }
         skipped += due - nextMark;
         nextMark = due + 1;

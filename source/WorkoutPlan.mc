@@ -71,6 +71,10 @@ class WorkoutPlan {
 // Integer formatting avoids rounding a countdown up/down through floating point.
 class WorkoutText {
     function initialize() {}
+    function elapsedTime(ms) {
+        var seconds = (ms / 1000).toNumber();
+        return (seconds / 60).toNumber() + ":" + (seconds % 60).format("%02d") + "." + ((ms % 1000) / 100).toNumber();
+    }
     function duration(ms) {
         var seconds = ((ms + 999) / 1000).toNumber();
         return (seconds / 60).toNumber() + ":" + (seconds % 60).format("%02d");

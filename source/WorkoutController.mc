@@ -99,6 +99,17 @@ class WorkoutController {
         if (!running) { return; }
         var tick = System.getTimer();
         var event = engine.update(tick);
+        handleEvent(event, tick);
+    }
+    function lap() {
+        if (!running || engine == null) { return; }
+        var tick = System.getTimer();
+        if (!engine.lap(tick)) { return; }
+        // Close the native FIT lap immediately, before requesting feedback.
+        if (!engine.done()) { recording.phaseChanged(engine.index); }
+        handleEvent([true, false], tick);
+    }
+    function handleEvent(event, tick) {
         try {
             if (engine.done()) {
                 Attention.playTone(Attention.TONE_SUCCESS);
@@ -118,7 +129,7 @@ class WorkoutController {
     function finish(reason) {
         if (running && engine != null) {
             finishedMs = engine.elapsed(System.getTimer());
-            if (finishedMs > engine.totalMs) { finishedMs = engine.totalMs; }
+            if (engine.done() && finishedMs > engine.totalMs) { finishedMs = engine.totalMs; }
         }
         running = false;
         timer.stop();
