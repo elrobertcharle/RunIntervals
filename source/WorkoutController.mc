@@ -17,6 +17,7 @@ class WorkoutController {
     var confirmSave = false;
     var endChoice = 0; // 0 = save, 1 = discard
     var confirmDiscard = false;
+    var showingDiscarded = false;
 
     function initialize() {
         profiles = new WorkoutProfiles();
@@ -31,7 +32,7 @@ class WorkoutController {
         recording.prepare();
     }
     function applyPlan(draft) {
-        if (running || recording.pending()) { return false; }
+        if (showingDiscarded || running || recording.pending()) { return false; }
         // Validate the entire timeline before replacing the session.
         try { draft.timeline(); } catch (e) { return false; }
         if (!profiles.save("active-session", draft)) { return false; }
@@ -43,16 +44,17 @@ class WorkoutController {
         return true;
     }
     function edit() {
-        if (running || recording.pending()) { return; }
+        if (showingDiscarded || running || recording.pending()) { return; }
         var editor = new WorkoutEditor(self);
         WatchUi.pushView(editor, new WorkoutEditorDelegate(editor), WatchUi.SLIDE_IMMEDIATE);
     }
     function showSteps() {
-        if (running || recording.pending()) { return; }
+        if (showingDiscarded || running || recording.pending()) { return; }
         var view = new WorkoutSteps(plan);
         WatchUi.pushView(view, new WorkoutStepsDelegate(view), WatchUi.SLIDE_IMMEDIATE);
     }
     function start() {
+        if (showingDiscarded) { return; }
         if (running) { finish("CANCELLED"); return; }
         if (recording.pending()) {
             if (!confirmSave) {
@@ -67,6 +69,10 @@ class WorkoutController {
                 if (!recording.pending()) {
                     confirmSave = false;
                     confirmDiscard = false;
+                    if (endChoice == 1) {
+                        showingDiscarded = true;
+                        timer.start(method(:returnToHomeAfterDiscard), 3000, false);
+                    }
                 }
             }
             WatchUi.requestUpdate();
@@ -93,6 +99,17 @@ class WorkoutController {
             status = "IN PROGRESS";
             timer.start(method(:onTick), 50, true);
         } catch (e) { finish("START ERROR"); }
+        WatchUi.requestUpdate();
+    }
+    function returnToHomeAfterDiscard() {
+        if (!showingDiscarded) { return; }
+        showingDiscarded = false;
+        engine = null;
+        finishedMs = 0;
+        lastUi = 0;
+        endChoice = 0;
+        status = "READY";
+        recording.prepare();
         WatchUi.requestUpdate();
     }
     function chooseEnd(direction) {
@@ -147,6 +164,7 @@ class WorkoutController {
         WatchUi.requestUpdate();
     }
     function shutdown() {
+        showingDiscarded = false;
         var reason = running ? "APP STOP" : null;
         running = false;
         timer.stop();

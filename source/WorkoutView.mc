@@ -13,24 +13,24 @@ class WorkoutView extends WatchUi.View {
     function onUpdate(dc) {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
+        if (workout.showingDiscarded) {
+            var message = "Activity Discarded";
+            var font = fitFont(dc, message, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], dc.getWidth() * 0.90, dc.getHeight() * 0.15);
+            dc.drawText(dc.getWidth() / 2, (dc.getHeight() - dc.getFontHeight(font)) / 2, font, message, Graphics.TEXT_JUSTIFY_CENTER);
+            return;
+        }
         var fit = workout.recording;
         if (workout.running) { drawRunning(dc); return; }
         if (workout.confirmSave && fit.pending()) {
             line(dc, 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : "ACTIVITY STOPPED");
             line(dc, 0.25, Graphics.FONT_LARGE, text.duration(workout.finishedMs));
-            line(dc, 0.41, Graphics.FONT_TINY, fit.state);
-            if (workout.confirmDiscard) {
-                line(dc, 0.54, Graphics.FONT_SMALL, "Cannot be undone");
-                line(dc, 0.68, Graphics.FONT_SMALL, "START: discard");
-                line(dc, 0.80, Graphics.FONT_TINY, "BACK: cancel");
-            } else {
+            if (!workout.confirmDiscard) {
+                line(dc, 0.41, Graphics.FONT_TINY, fit.state);
                 dc.setColor(workout.endChoice == 0 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
                 line(dc, 0.53, Graphics.FONT_SMALL, (workout.endChoice == 0 ? "> " : "") + "Save");
                 dc.setColor(workout.endChoice == 1 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
                 line(dc, 0.65, Graphics.FONT_SMALL, (workout.endChoice == 1 ? "> " : "") + "Discard");
                 dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-                line(dc, 0.78, Graphics.FONT_TINY, "UP/DOWN: choose");
-                line(dc, 0.85, Graphics.FONT_TINY, "START: select");
             }
             return;
         }
@@ -48,9 +48,10 @@ class WorkoutView extends WatchUi.View {
             line(dc, 0.62, Graphics.FONT_TINY, plan.mixed(3) ? "Varied recovery" : "Recovery " + text.duration(plan.repetitions[0][2]));
         }
         line(dc, 0.70, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
-        line(dc, 0.77, Graphics.FONT_XTINY, fit.pending() ? "START: options" : "START: run");
-        line(dc, 0.83, Graphics.FONT_XTINY, fit.pending() ? "Activity not saved" : "UP: edit");
-        if (!fit.pending()) { line(dc, 0.89, Graphics.FONT_XTINY, "DOWN: steps"); }
+        if (fit.pending()) {
+            line(dc, 0.77, Graphics.FONT_XTINY, "START: options");
+            line(dc, 0.83, Graphics.FONT_XTINY, "Activity not saved");
+        }
     }
     function drawRunning(dc) {
         var e = workout.engine;
@@ -224,6 +225,7 @@ class WorkoutDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
     function onBack() {
+        if (workout.showingDiscarded) { return true; }
         if (workout.running) { workout.lap(); return true; }
         else if (workout.recording.pending()) {
             if (workout.confirmDiscard) { workout.confirmDiscard = false; }

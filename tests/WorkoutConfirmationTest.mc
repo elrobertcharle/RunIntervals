@@ -4,7 +4,11 @@ import Toybox.System;
 (:test)
 class ConfirmationTimer {
     var stops = 0;
+    var callback;
+    var delay;
+    var repeating;
     function initialize() {}
+    function start(cb, ms, repeat) { callback = cb; delay = ms; repeating = repeat; }
     function stop() { stops += 1; }
 }
 
@@ -165,6 +169,7 @@ function discardFailurePreservesPendingActivity(logger) {
     f.discardOk = false;
     w.start();
     Test.assert(w.recording.pending() && w.confirmDiscard && f.discards == 1);
+    Test.assert(!w.showingDiscarded && w.timer.callback == null);
     Test.assert(w.recording.state.equals("FIT DISCARD ERROR") && f.saves == 0);
     f.discardOk = true;
     f.throwDiscard = true;
@@ -177,6 +182,31 @@ function discardFailurePreservesPendingActivity(logger) {
     delegate.onSelect(); // Can choose to save after an unsuccessful discard.
     Test.assert(!w.recording.pending() && f.saves == 1 && f.discards == 2);
     Test.assert(f.capturedResult.equals("CANCELLED"));
+    return true;
+}
+
+(:test)
+function discardedNoticeReturnsHome(logger) {
+    var f = new FakeWorkoutSession();
+    var w = new ConfirmationController(f);
+    var originalPlan = w.plan;
+    var delegate = new WorkoutDelegate(w);
+    w.start();
+    w.chooseEnd(1);
+    w.start();
+    w.start();
+    Test.assert(w.showingDiscarded && !w.recording.pending());
+    Test.assert(w.timer.delay == 3000 && !w.timer.repeating);
+    delegate.onSelect();
+    delegate.onPreviousPage();
+    delegate.onNextPage();
+    delegate.onMenu();
+    delegate.onBack();
+    Test.assert(w.showingDiscarded && !w.running && f.discards == 1);
+    w.timer.callback.invoke();
+    Test.assert(!w.showingDiscarded && w.engine == null && w.finishedMs == 0);
+    Test.assert(w.status.equals("READY") && w.endChoice == 0);
+    Test.assert(w.plan == originalPlan && !w.confirmSave && !w.confirmDiscard);
     return true;
 }
 
