@@ -1,7 +1,6 @@
 // Session settings shared by the editor, persistent profiles and timeline.
 class WorkoutPlan {
     var repetitions;
-    var warmupMs = 60000;
     var cooldownMs = 60000;
 
     function initialize() {
@@ -14,23 +13,22 @@ class WorkoutPlan {
             var r = repetitions[i];
             result.repetitions.add([r[0], r[1], r[2]]);
         }
-        result.warmupMs = warmupMs;
         result.cooldownMs = cooldownMs;
         return result;
     }
-    // Values in editor units: count, metres, tenths, seconds, seconds, seconds.
+    // Values in editor units: count, metres, tenths, recovery seconds, cooldown seconds.
     function value(field) {
         if (field == 0) { return repetitions.size(); }
         if (field == 1) { return repetitions[0][0]; }
         if (field == 2) { return repetitions[0][1] / 100; }
         if (field == 3) { return repetitions[0][2] / 1000; }
-        return (field == 4 ? warmupMs : cooldownMs) / 1000;
+        return cooldownMs / 1000;
     }
     function minimum(field) { return field == 0 ? 1 : (field == 1 ? 100 : (field == 2 ? 10 : 0)); }
     function maximum(field) { return field == 0 ? 40 : (field == 1 ? 10000 : (field == 2 ? 1200 : 3600)); }
     function step(field) { return field == 1 ? 100 : (field >= 3 ? 5 : 1); }
     function setValue(field, v) {
-        if (field < 0 || field > 5 || v < minimum(field) || v > maximum(field) || v % step(field) != 0) { return false; }
+        if (field < 0 || field > 4 || v < minimum(field) || v > maximum(field) || v % step(field) != 0) { return false; }
         if (field == 0) {
             var resized = [];
             for (var i = 0; i < v; i += 1) {
@@ -43,8 +41,7 @@ class WorkoutPlan {
             for (var j = 0; j < repetitions.size(); j += 1) {
                 repetitions[j][field - 1] = v * (field == 2 ? 100 : (field == 3 ? 1000 : 1));
             }
-        } else if (field == 4) { warmupMs = v * 1000; }
-        else { cooldownMs = v * 1000; }
+        } else { cooldownMs = v * 1000; }
         return true;
     }
     function mixed(field) {
@@ -65,7 +62,7 @@ class WorkoutPlan {
         repetitions[index][field - 1] = v * (field == 2 ? 100 : (field == 3 ? 1000 : 1));
         return true;
     }
-    function timeline() { return new WorkoutEngine(repetitions, warmupMs, cooldownMs, 0); }
+    function timeline() { return new WorkoutEngine(repetitions, 0, cooldownMs, 0); }
 }
 
 // Integer formatting avoids rounding a countdown up/down through floating point.

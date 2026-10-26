@@ -11,7 +11,8 @@ class WorkoutProfiles {
     function slotKey(slot) { return "profile-" + slot; }
     function encode(plan) {
         var p = plan.copy();
-        return [1, p.warmupMs, p.cooldownMs, p.repetitions];
+        // Keep the v1 shape readable by existing installations; warm-up is retired.
+        return [1, 0, p.cooldownMs, p.repetitions];
     }
     function validDuration(v) {
         return v instanceof Lang.Number && v >= 0 && v <= 3600000 && v % 5000 == 0;
@@ -33,7 +34,7 @@ class WorkoutProfiles {
                 r[1] < 1000 || r[1] > 120000 || r[1] % 100 != 0 || !validDuration(r[2])) { return null; }
             p.repetitions.add([r[0], r[1], r[2]]);
         }
-        p.warmupMs = data[1];
+        // Validate but ignore the legacy warm-up duration when loading old profiles.
         p.cooldownMs = data[2];
         try { p.timeline(); } catch (e) { return null; }
         return p;

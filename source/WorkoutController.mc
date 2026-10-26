@@ -80,7 +80,7 @@ class WorkoutController {
         if (!(Attention has :playTone)) { status = "NO SOUND"; WatchUi.requestUpdate(); return; }
         try {
             recording.prepare();
-            engine = new WorkoutEngine(repetitions, plan.warmupMs, plan.cooldownMs, System.getTimer());
+            engine = plan.timeline();
             if (!recording.start(engine.phases)) { finish("START ERROR"); return; }
             // Plan construction and FIT field setup happen before the timing origin.
             engine.clock.origin = System.getTimer();

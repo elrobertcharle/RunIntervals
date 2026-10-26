@@ -44,7 +44,7 @@ class WorkoutView extends WatchUi.View {
             var plan = workout.plan;
             line(dc, 0.25, Graphics.FONT_LARGE, plan.mixed(1) ? plan.repetitions.size() + " varied reps" : plan.repetitions.size() + " x " + plan.repetitions[0][0] + " m");
             line(dc, 0.41, Graphics.FONT_SMALL, plan.mixed(2) ? "Varied pace / 100 m" : text.pace(plan.repetitions[0][1]) + " | " + text.interval(plan.repetitions[0][1]) + " s");
-            line(dc, 0.53, Graphics.FONT_TINY, "Warm " + text.duration(plan.warmupMs) + " | Cool " + text.duration(plan.cooldownMs));
+            line(dc, 0.53, Graphics.FONT_TINY, "Cool down " + text.duration(plan.cooldownMs));
             line(dc, 0.62, Graphics.FONT_TINY, plan.mixed(3) ? "Varied recovery" : "Recovery " + text.duration(plan.repetitions[0][2]));
         }
         line(dc, 0.70, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
@@ -65,7 +65,6 @@ class WorkoutView extends WatchUi.View {
         dc.setColor(color, Graphics.COLOR_BLACK);
         line(dc, 0.09, Graphics.FONT_SMALL, p[0]);
         var repIndex = p[3];
-        if (repIndex < 0 && p[0].equals("WARM-UP")) { repIndex = 0; }
         var repLabel = repIndex >= 0 ? (effort ? "REP " : "NEXT ") + (repIndex + 1) + " / " + workout.repetitions.size() : "FINISHING";
         line(dc, 0.20, Graphics.FONT_SMALL, repLabel);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
