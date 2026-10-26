@@ -115,8 +115,6 @@ class WorkoutEditor extends WatchUi.View {
         if (!individual && field == 10) { note = "Load, review, then Apply"; }
         if (!individual && field == 11) { note = "Deletes selected slot"; }
         dc.drawText(x, h * 0.66, Graphics.FONT_TINY, message.equals("") ? note : message, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x, h * 0.76, Graphics.FONT_TINY, editing ? "UP + / DOWN -" : "UP/DOWN: field", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x, h * 0.83, Graphics.FONT_TINY, editing ? "START: set" : "START: select", Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
 

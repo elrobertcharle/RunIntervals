@@ -22,8 +22,8 @@ class WorkoutView extends WatchUi.View {
         var fit = workout.recording;
         if (workout.running) { drawRunning(dc); return; }
         if (workout.confirmSave && fit.pending()) {
-            line(dc, 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : "ACTIVITY STOPPED");
-            line(dc, 0.25, Graphics.FONT_LARGE, text.duration(workout.finishedMs));
+            line(dc, workout.confirmDiscard ? 0.36 : 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : "ACTIVITY STOPPED");
+            line(dc, workout.confirmDiscard ? 0.49 : 0.25, Graphics.FONT_LARGE, text.duration(workout.finishedMs));
             if (!workout.confirmDiscard) {
                 line(dc, 0.41, Graphics.FONT_TINY, fit.state);
                 dc.setColor(workout.endChoice == 0 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
