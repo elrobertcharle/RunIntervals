@@ -47,6 +47,11 @@ class WorkoutController {
         var editor = new WorkoutEditor(self);
         WatchUi.pushView(editor, new WorkoutEditorDelegate(editor), WatchUi.SLIDE_IMMEDIATE);
     }
+    function showSteps() {
+        if (running || recording.pending()) { return; }
+        var view = new WorkoutSteps(plan);
+        WatchUi.pushView(view, new WorkoutStepsDelegate(view), WatchUi.SLIDE_IMMEDIATE);
+    }
     function start() {
         if (running) { finish("CANCELLED"); return; }
         if (recording.pending()) {

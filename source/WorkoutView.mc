@@ -46,9 +46,10 @@ class WorkoutView extends WatchUi.View {
             line(dc, 0.53, Graphics.FONT_TINY, "Warm " + text.duration(plan.warmupMs) + " | Cool " + text.duration(plan.cooldownMs));
             line(dc, 0.62, Graphics.FONT_TINY, plan.mixed(3) ? "Varied recovery" : "Recovery " + text.duration(plan.repetitions[0][2]));
         }
-        line(dc, 0.71, Graphics.FONT_TINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
-        line(dc, 0.79, Graphics.FONT_TINY, fit.pending() ? "START: options" : "START: run");
-        line(dc, 0.86, Graphics.FONT_TINY, fit.pending() ? "Activity not saved" : "UP: edit");
+        line(dc, 0.70, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
+        line(dc, 0.77, Graphics.FONT_XTINY, fit.pending() ? "START: options" : "START: run");
+        line(dc, 0.83, Graphics.FONT_XTINY, fit.pending() ? "Activity not saved" : "UP: edit");
+        if (!fit.pending()) { line(dc, 0.89, Graphics.FONT_XTINY, "DOWN: steps"); }
     }
     function drawRunning(dc) {
         var e = workout.engine;
@@ -106,7 +107,11 @@ class WorkoutDelegate extends WatchUi.BehaviorDelegate {
         else { workout.edit(); }
         return true;
     }
-    function onNextPage() { workout.chooseEnd(1); return true; }
+    function onNextPage() {
+        if (workout.recording.pending()) { workout.chooseEnd(1); }
+        else { workout.showSteps(); }
+        return true;
+    }
     function onBack() {
         if (workout.running) { workout.lap(); return true; }
         else if (workout.recording.pending()) {

@@ -13,7 +13,7 @@ class WorkoutEditor extends WatchUi.View {
     var slot = 1;
     var confirming = false;
     var message = "";
-    var labels = ["Repetitions", "Distance / rep", "100 m interval", "Recovery", "Warm-up", "Cool-down", "Apply session", "Restore demo", "Edit each rep", "Profile slot", "Save profile", "Load profile", "Delete profile"];
+    var labels = ["Repetitions", "Distance / rep", "100 m interval", "Recovery", "Warm-up", "Cool-down", "Apply session", "Restore demo", "Edit each rep", "Profile slot", "Save profile", "Load profile", "Delete profile", "View steps"];
     var repLabels = ["Repetition", "Distance", "100 m interval", "Recovery after", "Session editor"];
     var text;
     function initialize(w) {
@@ -59,6 +59,10 @@ class WorkoutEditor extends WatchUi.View {
             else { message = "Apply failed: retry"; }
         } else if (!individual && field == 7) { draft = new WorkoutPlan(); field = 0; }
         else if (!individual && field == 8) { individual = true; repIndex = 0; field = 0; }
+        else if (!individual && field == 13) {
+            var steps = new WorkoutSteps(draft);
+            WatchUi.pushView(steps, new WorkoutStepsDelegate(steps), WatchUi.SLIDE_IMMEDIATE);
+        }
         else if (!individual && field >= 10) {
             var profiles = workout.profiles;
             var key = profiles.slotKey(slot);
@@ -92,7 +96,7 @@ class WorkoutEditor extends WatchUi.View {
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
         dc.drawText(x, h * 0.27, Graphics.FONT_SMALL, individual ? repLabels[field] : labels[field], Graphics.TEXT_JUSTIFY_CENTER);
         var numeric = individual ? field < 4 : (field < 6 || field == 9);
-        var value = numeric ? displayValue(editing ? candidate : currentValue()) : (individual ? "Back" : (field == 6 ? "Apply" : (field == 7 ? "Demo" : (field == 8 ? "Open" : "Slot " + slot))));
+        var value = numeric ? displayValue(editing ? candidate : currentValue()) : (individual ? "Back" : (field == 6 ? "Apply" : (field == 7 ? "Demo" : (field == 8 || field == 13 ? "Open" : "Slot " + slot))));
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_BLACK);
         dc.drawText(x, h * 0.40, Graphics.FONT_LARGE, value, Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
@@ -100,6 +104,7 @@ class WorkoutEditor extends WatchUi.View {
         if (field == 2) { hint = text.pace((editing ? candidate : currentValue()) * 100); }
         else if (!individual && field == 6) { hint = "Total " + text.duration(draft.timeline().totalMs); }
         else if (!individual && field == 7) { hint = "4 x 400 m, varied pace"; }
+        else if (!individual && field == 13) { hint = "Preview draft steps"; }
         else if (!individual && field >= 9) { hint = "Profile " + slot + " / 3"; }
         else if (individual && field == 3 && repIndex == draft.repetitions.size() - 1) { hint = "Last recovery unused"; }
         else if (field >= 3 && field <= 5 && numeric) { hint = "0:00 = skip phase"; }
