@@ -5,6 +5,7 @@ import Toybox.WatchUi;
 class WorkoutView extends WatchUi.View {
     var workout;
     var text;
+    var liveFonts = {};
     function initialize(w) { View.initialize(); workout = w; text = new WorkoutText(); }
     function line(dc, y, font, value) {
         dc.drawText(dc.getWidth() / 2, dc.getHeight() * y, font, value, Graphics.TEXT_JUSTIFY_CENTER);
@@ -58,6 +59,8 @@ class WorkoutView extends WatchUi.View {
         var left = p[2] - now;
         if (left < 0) { left = 0; }
         var effort = p[0].equals("EFFORT");
+        if (effort) { drawEffort(dc, p, now); return; }
+        if (p[0].equals("RECOVERY")) { drawRest(dc, p, now); return; }
         var color = effort ? Graphics.COLOR_ORANGE : Graphics.COLOR_BLUE;
         dc.setColor(color, Graphics.COLOR_BLACK);
         line(dc, 0.09, Graphics.FONT_SMALL, p[0]);
@@ -95,6 +98,115 @@ class WorkoutView extends WatchUi.View {
         dc.fillRectangle(dc.getWidth() * 0.20, dc.getHeight() * 0.77, width, 4);
         dc.setColor(color, Graphics.COLOR_BLACK);
         dc.fillRectangle(dc.getWidth() * 0.20, dc.getHeight() * 0.77, width * progress, 4);
+    }
+    function fitFont(dc, value, fonts, maxWidth, maxHeight) {
+        for (var i = 0; i < fonts.size(); i += 1) {
+            if (dc.getTextWidthInPixels(value, fonts[i]) <= maxWidth && dc.getFontHeight(fonts[i]) <= maxHeight) { return fonts[i]; }
+        }
+        return fonts[fonts.size() - 1];
+    }
+    function liveFont(dc, value, width, height) {
+        var size = height.toNumber();
+        if (!liveFonts.hasKey(size)) {
+            liveFonts[size] = Graphics.getVectorFont({:font=>Graphics.FONT_SMALL, :scale=>size.toFloat() / dc.getFontHeight(Graphics.FONT_SMALL)});
+        }
+        var font = liveFonts[size];
+        if (font == null) { font = Graphics.FONT_SMALL; }
+        if (dc.getTextWidthInPixels(value, font) > width) {
+            var smaller = (size * width / dc.getTextWidthInPixels(value, font)).toNumber();
+            if (!liveFonts.hasKey(smaller)) {
+                liveFonts[smaller] = Graphics.getVectorFont({:font=>Graphics.FONT_SMALL, :scale=>smaller.toFloat() / dc.getFontHeight(Graphics.FONT_SMALL)});
+            }
+            font = liveFonts[smaller];
+            if (font == null) { font = fitFont(dc, value, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], width, height); }
+        }
+        return font;
+    }
+    function numberAt(dc, x, y, value, width, height) {
+        var font = liveFont(dc, value, width, height);
+        dc.drawText(x, y, font, value, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+    function drawHeartRate(dc, y) {
+        var hr = workout.recording.heartRate;
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var value = hr == null || hr <= 0 ? "--" : hr.toString();
+        var font = liveFont(dc, value, w * 0.35, h * 0.16);
+        var numberWidth = dc.getTextWidthInPixels(value, font);
+        var heartSize = w * 0.075;
+        var gap = w * 0.025;
+        var left = (w - numberWidth - heartSize - gap) / 2;
+        var top = h * y + (dc.getFontHeight(font) - heartSize) / 2;
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        // Draw the heart directly so it does not depend on font glyph coverage.
+        dc.fillCircle(left + heartSize * 0.25, top + heartSize * 0.28, heartSize * 0.25);
+        dc.fillCircle(left + heartSize * 0.75, top + heartSize * 0.28, heartSize * 0.25);
+        dc.fillPolygon([[left, top + heartSize * 0.35], [left + heartSize, top + heartSize * 0.35], [left + heartSize * 0.5, top + heartSize]]);
+        dc.drawText(left + heartSize + gap, h * y, font, value, Graphics.TEXT_JUSTIFY_LEFT);
+    }
+    function drawEffort(dc, p, now) {
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var fit = workout.recording;
+        var data = fit.liveData(fit.activityInfo());
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        line(dc, 0.07, Graphics.FONT_SMALL, "REP " + (p[3] + 1) + " / " + workout.repetitions.size());
+        numberAt(dc, w / 2, h * 0.17, text.elapsedTime(now - p[1]), w * 0.78, h * 0.19);
+        dc.setColor(0xCC2266, Graphics.COLOR_BLACK);
+        dc.drawLine(w * 0.10, h * 0.39, w * 0.90, h * 0.39);
+        dc.drawLine(w / 2, h * 0.39, w / 2, h * 0.73);
+        dc.drawLine(w * 0.13, h * 0.73, w * 0.87, h * 0.73);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.drawText(w * 0.28, h * 0.42, Graphics.FONT_XTINY, "DISTANCE", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(w * 0.72, h * 0.42, Graphics.FONT_XTINY, "PACE", Graphics.TEXT_JUSTIFY_CENTER);
+        numberAt(dc, w * 0.28, h * 0.50, data[0] == null ? "--" : data[0].toNumber().toString(), w * 0.38, h * 0.21);
+        numberAt(dc, w * 0.72, h * 0.50, text.realPace(data[1]), w * 0.38, h * 0.21);
+        drawHeartRate(dc, 0.77);
+    }
+    function remainingFraction(p, now) {
+        var fraction = (p[2] - now).toFloat() / (p[2] - p[1]);
+        if (fraction < 0) { return 0.0; }
+        if (fraction > 1) { return 1.0; }
+        return fraction;
+    }
+    function nextStep() {
+        var e = workout.engine;
+        return e.index + 1 < e.phases.size() ? e.phases[e.index + 1] : null;
+    }
+    function drawRest(dc, p, now) {
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var left = p[2] - now;
+        if (left < 0) { left = 0; }
+        var radius = (w < h ? w : h) * 0.465;
+        dc.setPenWidth(7);
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
+        dc.drawCircle(w / 2, h / 2, radius);
+        var fraction = remainingFraction(p, now);
+        var degrees = (360 * fraction).toNumber();
+        if (degrees > 0) {
+            dc.setColor(0xFFDD33, Graphics.COLOR_BLACK);
+            if (degrees == 360) { dc.drawCircle(w / 2, h / 2, radius); }
+            else { dc.drawArc(w / 2, h / 2, radius, Graphics.ARC_CLOCKWISE, 90, 90 - degrees); }
+        }
+        dc.setPenWidth(1);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.drawText(w * 0.20, h * 0.19, Graphics.FONT_SMALL, "REST", Graphics.TEXT_JUSTIFY_LEFT);
+        var countdown = text.duration(left);
+        var font = fitFont(dc, countdown, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], w * 0.34, h * 0.12);
+        dc.drawText(w * 0.79, h * 0.19, font, countdown, Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.drawLine(w * 0.17, h * 0.31, w * 0.83, h * 0.31);
+        var next = nextStep();
+        line(dc, 0.38, Graphics.FONT_XTINY, "NEXT");
+        if (next != null && next[0].equals("EFFORT")) {
+            var r = workout.repetitions[next[3]];
+            line(dc, 0.46, Graphics.FONT_SMALL, "Run " + r[0] + " m");
+            line(dc, 0.58, Graphics.FONT_SMALL, text.pace(r[1]));
+        } else {
+            line(dc, 0.46, Graphics.FONT_SMALL, next == null ? "Finish" : next[0]);
+            if (next != null) { line(dc, 0.58, Graphics.FONT_SMALL, text.duration(next[2] - next[1])); }
+        }
+        drawHeartRate(dc, 0.77);
     }
 }
 class WorkoutDelegate extends WatchUi.BehaviorDelegate {

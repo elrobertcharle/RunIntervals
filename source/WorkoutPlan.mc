@@ -71,6 +71,14 @@ class WorkoutPlan {
 // Integer formatting avoids rounding a countdown up/down through floating point.
 class WorkoutText {
     function initialize() {}
+    function distance(metres) { return metres == null ? "--" : (metres / 1000.0).format("%.2f"); }
+    function realPace(speed) {
+        if (speed == null || speed <= 0) { return "--:--"; }
+        var seconds = (1000.0 / speed + 0.5).toNumber();
+        // Values above 99:59/km cannot fit the live data field.
+        if (seconds > 5999) { return "--:--"; }
+        return (seconds / 60).toNumber() + ":" + (seconds % 60).format("%02d");
+    }
     function elapsedTime(ms) {
         var seconds = (ms / 1000).toNumber();
         return (seconds / 60).toNumber() + ":" + (seconds % 60).format("%02d") + "." + ((ms % 1000) / 100).toNumber();

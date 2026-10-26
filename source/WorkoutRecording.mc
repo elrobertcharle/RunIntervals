@@ -18,6 +18,7 @@ class WorkoutRecording {
     var sensorWarning = false;
     var metadata;
     var saveClock;
+    var phaseStartDistance = 0;
 
     function initialize() {}
     function pending() { return session != null; }
@@ -57,9 +58,20 @@ class WorkoutRecording {
     function createSession() {
         return ActivityRecording.createSession({:name=>"RunIntervals", :sport=>Activity.SPORT_RUNNING, :subSport=>Activity.SUB_SPORT_GENERIC});
     }
+    function activityInfo() { return Activity.getActivityInfo(); }
+    function liveData(info) {
+        var distance = null;
+        if (info != null && info.elapsedDistance != null) {
+            if (phaseStartDistance == null) { phaseStartDistance = info.elapsedDistance; }
+            distance = info.elapsedDistance - phaseStartDistance;
+            if (distance < 0) { distance = 0; }
+        }
+        return [distance, info == null ? null : info.currentSpeed];
+    }
     function start(phases) {
         if (pending() || !canStart(System.getTimer())) { return false; }
         phaseIndex = 0;
+        phaseStartDistance = 0;
         lapErrors = 0;
         missedBoundaries = 0;
         metadata = null;
@@ -80,6 +92,8 @@ class WorkoutRecording {
         // addLap has no timestamp argument. Do not fabricate historical laps.
         missedBoundaries += index - phaseIndex - 1;
         phaseIndex = index;
+        var info = activityInfo();
+        phaseStartDistance = info == null ? null : info.elapsedDistance;
         var success = false;
         try {
             if (metadata != null) { metadata.writeLap(index); }
