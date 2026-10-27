@@ -126,7 +126,6 @@ class WorkoutEditor extends WatchUi.View {
         else if (!individual && field == 11) { hint = "Preview draft steps"; }
         else if (!individual && field >= 7) { hint = "Profile " + slot + " / 3"; }
         else if (individual && field == 3 && repIndex == draft.repetitions.size() - 1) { hint = "Last recovery unused"; }
-        else if (field == 3 && numeric) { hint = "0:00 = skip phase"; }
         dc.drawText(x, h * 0.54, Graphics.FONT_SMALL, hint, Graphics.TEXT_JUSTIFY_CENTER);
         var note = individual ? "Changes stay in draft" : (field >= 1 && field <= 3 ? "Applies to every rep" : "Apply saves session");
         if (!individual && field == 4) { note = ""; }
