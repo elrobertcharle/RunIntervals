@@ -79,16 +79,20 @@ function editorDraftIsolation(logger) {
     editor.select();
     Test.assert(editor.draft.repetitions[0][1] == 22900);
     Test.assert(w.plan.repetitions[0][1] == 23000);
-    editor.field = 6;
+    editor.field = 5;
+    editor.move(1);
+    Test.assert(editor.labels[editor.field].equals("Edit each rep"));
     editor.select();
-    Test.assert(editor.draft.mixed(2));
+    Test.assert(editor.individual);
+    editor.back();
+    Test.assert(!editor.individual && editor.field == 6);
     editor.field = 2;
     editor.select();
     var delegate = new WorkoutEditorDelegate(editor);
     delegate.onPreviousPage(); // UP increases the edited value.
-    Test.assert(editor.candidate == 231);
-    delegate.onNextPage();
     Test.assert(editor.candidate == 230);
+    delegate.onNextPage();
+    Test.assert(editor.candidate == 229);
     return true;
 }
 

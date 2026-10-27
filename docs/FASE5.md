@@ -55,8 +55,7 @@ Los perfiles se identifican como `Slot 1`, `Slot 2` y `Slot 3`, sin nombres edit
   borrador y la sesión activa. BACK o moverse cancela la confirmación.
 
 Guardar y borrar son acciones persistentes inmediatas: salir del editor con BACK
-no deshace esas acciones. Restaurar la demo solo cambia el borrador hasta aplicar
-(o guardarlo expresamente en un perfil). Cada slot es independiente de los demás
+no deshace esas acciones. Cada slot es independiente de los demás
  y de la última sesión aplicada.
 
 ## Almacenamiento

@@ -119,7 +119,7 @@ class ProfileTestWorkout {
 function profileEditorDraftAndFailures(logger) {
     var w = new ProfileTestWorkout();
     var editor = new WorkoutEditor(w);
-    editor.field = 7;
+    editor.field = 6;
     editor.select();
     Test.assert(editor.individual);
     editor.select(); // Choose repetition 2.
@@ -136,7 +136,7 @@ function profileEditorDraftAndFailures(logger) {
     Test.assert(editor.draft.repetitions[1][1] == 22600);
     Test.assert(w.plan.repetitions[1][1] == 22700 && editor.draft.repetitions[0][1] == 23000);
     editor.back();
-    editor.field = 9;
+    editor.field = 8;
     editor.select();
     Test.assert(w.profiles.load("profile-1") == null);
     editor.back();
@@ -145,7 +145,7 @@ function profileEditorDraftAndFailures(logger) {
     editor.select();
     Test.assert(w.profiles.load("profile-1").repetitions[1][1] == 22600);
     editor.draft.setValue(0, 1);
-    editor.field = 10;
+    editor.field = 9;
     editor.select();
     Test.assert(editor.draft.repetitions.size() == 4 && w.plan.repetitions[1][1] == 22700);
     editor.slot = 2;
@@ -208,14 +208,14 @@ function activePlanSaveFailureAndGuards(logger) {
 function profileSlotsAndDeleteConfirmation(logger) {
     var w = new ProfileTestWorkout();
     var editor = new WorkoutEditor(w);
-    editor.field = 9;
+    editor.field = 8;
     editor.select(); editor.select();
     editor.slot = 2;
     editor.draft.setValue(0, 2);
     editor.select(); editor.select();
     Test.assert(w.profiles.load("profile-1").repetitions.size() == 4);
     Test.assert(w.profiles.load("profile-2").repetitions.size() == 2);
-    editor.field = 11;
+    editor.field = 10;
     editor.select();
     editor.back();
     Test.assert(w.profiles.load("profile-2") != null);
@@ -223,7 +223,7 @@ function profileSlotsAndDeleteConfirmation(logger) {
     Test.assert(w.profiles.load("profile-2") == null);
     Test.assert(w.profiles.load("profile-1") != null && editor.draft.repetitions.size() == 2);
     w.profiles.values["profile-2"] = [99];
-    editor.field = 10;
+    editor.field = 9;
     editor.select();
     Test.assert(editor.message.equals("Invalid saved session") && editor.draft.repetitions.size() == 2);
     return true;

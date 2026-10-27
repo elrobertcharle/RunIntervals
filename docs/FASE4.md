@@ -14,7 +14,6 @@ No hay pausa. BACK durante una actividad termina y guarda la parte realizada.
   BACK cancela ese cambio de valor.
 - `Apply session` aplica el borrador y vuelve al inicio. BACK desde la navegación
   de campos descarta todo el borrador.
-- `Restore demo` restaura la demo en el borrador. Todavía requiere `Apply session`.
 
 ## Campos y alcance
 
@@ -51,7 +50,7 @@ y muestra estado FIT, avisos omitidos y errores de vueltas.
 ## Validación
 
 `WorkoutPlanTest.mc` cubre aislamiento del borrador, cancelación de un valor,
-restauración de demo, límites, copias independientes y una cronología editada:
+navegación del editor, límites, copias independientes y una cronología editada:
 dos esfuerzos de 800 m a 22,5 s/100 m, recuperación de 30 s, sin calentamiento
 y 10 s de enfriamiento (6:40 total).
 
@@ -64,7 +63,7 @@ Comprobar en el FR970 antes de validar en pista:
 4. Confirmar esfuerzo → recuperación → esfuerzo → enfriamiento → guardado;
    solo los esfuerzos producen avisos de referencia.
 5. Reiniciar, terminar con BACK y comprobar FIT parcial y duración congelada.
-6. Restaurar la demo, aplicar y verificar 23,0 / 22,7 / 22,4 / 22,1 s.
+6. Confirmar que después de `Apply session` aparece `Edit each rep`.
 7. Revisar GPS, frecuencia cardíaca y vueltas del FIT en Garmin Connect.
 
 Compilar y usar el simulador no verifica la latencia audible ni el FIT físico.
