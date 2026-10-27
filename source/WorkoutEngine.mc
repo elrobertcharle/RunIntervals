@@ -10,6 +10,7 @@ class WorkoutEngine {
     var effortResults = [];
     var pauseClock;
     var pausedMs = 0l;
+    var lastCountdownSecond = 5;
 
     function initialize(repetitions, warmupMs, cooldownMs, startTick) {
         if (repetitions.size() == 0 || warmupMs < 0 || cooldownMs < 0) {
@@ -68,27 +69,42 @@ class WorkoutEngine {
         totalMs += shift;
         index += 1;
         nextMark = 1;
+        lastCountdownSecond = 5;
         return true;
     }
 
-    // Return [phase changed, reference mark]. Efforts always wait for LAP.
+    // Countdown cues at 4, 3, 2, 1 only. At 0, use the existing phase-change alert.
+    // Delayed callbacks emit only the current cue, never a burst of stale beeps.
+    function countdownDue(now) {
+        if (done() || !phase()[0].equals("RECOVERY") ||
+            index + 1 >= phases.size() || !phases[index + 1][0].equals("EFFORT")) { return false; }
+        var left = phase()[2] - now;
+        if (left <= 0 || left > 4000) { return false; }
+        var second = ((left + 999) / 1000).toNumber();
+        if (second >= lastCountdownSecond) { return false; }
+        lastCountdownSecond = second;
+        return true;
+    }
+
+    // Return [phase changed, reference mark, recovery countdown]. Efforts wait for LAP.
     function update(tick) {
-        if (pauseClock != null) { return [false, false]; }
+        if (pauseClock != null) { return [false, false, false]; }
         var now = elapsed(tick);
         var changed = false;
         while (!done() && !phase()[0].equals("EFFORT") && now >= phase()[2]) {
             index += 1;
             nextMark = 1;
+            lastCountdownSecond = 5;
             changed = true;
         }
-        if (done() || !phase()[0].equals("EFFORT")) { return [changed, false]; }
+        if (done() || !phase()[0].equals("EFFORT")) { return [changed, false, countdownDue(now)]; }
         var p = phase();
         var due = ((now - p[1]) / p[4]).toNumber();
         var count = ((p[2] - p[1]) / p[4]).toNumber();
         if (due > count) { due = count; }
-        if (due < nextMark) { return [changed, false]; }
+        if (due < nextMark) { return [changed, false, false]; }
         skipped += due - nextMark;
         nextMark = due + 1;
-        return [changed, true];
+        return [changed, true, false];
     }
 }

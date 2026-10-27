@@ -162,19 +162,21 @@ class WorkoutController {
         if (!engine.lap(tick)) { return; }
         // Close the native FIT lap immediately, before requesting feedback.
         if (!engine.done()) { recording.phaseChanged(engine.index); }
-        handleEvent([true, false], tick);
+        handleEvent([true, false, false], tick);
     }
+    function playTone(tone) { Attention.playTone(tone); }
     function handleEvent(event, tick) {
         try {
             if (engine.done()) {
-                Attention.playTone(Attention.TONE_SUCCESS);
+                playTone(Attention.TONE_SUCCESS);
                 recording.completed(engine.index);
                 finish("COMPLETE");
                 return;
             }
             // Only the current phase can produce a reference tone.
-            if (event[1]) { Attention.playTone(Attention.TONE_LOUD_BEEP); }
-            else if (event[0]) { Attention.playTone(Attention.TONE_INTERVAL_ALERT); }
+            if (event[1]) { playTone(Attention.TONE_LOUD_BEEP); }
+            else if (event[0]) { playTone(Attention.TONE_INTERVAL_ALERT); }
+            else if (event[2]) { playTone(Attention.TONE_LOUD_BEEP); }
         } catch (e) { finish("SOUND ERROR"); return; }
         // Sound is requested first; disk-related lap work cannot delay that request.
         if (event[0]) { recording.phaseChanged(engine.index); }
