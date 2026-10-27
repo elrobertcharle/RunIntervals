@@ -22,10 +22,10 @@ class WorkoutView extends WatchUi.View {
         var fit = workout.recording;
         if (workout.running) { drawRunning(dc); return; }
         if (workout.confirmSave && fit.pending()) {
-            line(dc, workout.confirmDiscard ? 0.36 : 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : (workout.paused ? "ACTIVITY PAUSED" : "ACTIVITY STOPPED"));
+            line(dc, workout.confirmDiscard ? 0.36 : 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : (workout.paused ? "PAUSED" : "ACTIVITY STOPPED"));
             line(dc, workout.confirmDiscard ? 0.49 : 0.25, Graphics.FONT_LARGE, text.duration(workout.finishedMs));
             if (!workout.confirmDiscard) {
-                line(dc, 0.38, Graphics.FONT_TINY, fit.state);
+                if (!fit.state.equals("FIT PAUSED")) { line(dc, 0.38, Graphics.FONT_TINY, fit.state); }
                 if (workout.paused) {
                     dc.setColor(workout.endChoice == 2 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
                     line(dc, 0.49, Graphics.FONT_SMALL, (workout.endChoice == 2 ? "> " : "") + "Resume");
@@ -38,7 +38,7 @@ class WorkoutView extends WatchUi.View {
             }
             return;
         }
-        line(dc, 0.10, Graphics.FONT_SMALL, workout.status);
+        line(dc, 0.10, Graphics.FONT_SMALL, workout.engine == null ? (fit.gpsReady() ? "GPS OK" : "GPS ...") : workout.status);
         if (workout.engine != null) {
             line(dc, 0.25, Graphics.FONT_LARGE, text.duration(workout.finishedMs));
             line(dc, 0.41, Graphics.FONT_SMALL, fit.state);
@@ -51,7 +51,12 @@ class WorkoutView extends WatchUi.View {
             line(dc, 0.53, Graphics.FONT_TINY, "Cool down " + text.duration(plan.cooldownMs));
             line(dc, 0.62, Graphics.FONT_TINY, plan.mixed(3) ? "Varied recovery" : "Recovery " + text.duration(plan.repetitions[0][2]));
         }
-        line(dc, 0.70, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
+        if (workout.engine == null) {
+            if (!workout.status.equals("READY")) { line(dc, 0.70, Graphics.FONT_XTINY, workout.status); }
+            drawHeartRate(dc, 0.77);
+        } else {
+            line(dc, 0.70, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
+        }
         if (fit.pending()) {
             line(dc, 0.77, Graphics.FONT_XTINY, "START: options");
             line(dc, 0.83, Graphics.FONT_XTINY, "Activity not saved");
