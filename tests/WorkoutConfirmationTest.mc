@@ -71,7 +71,7 @@ function confirmBeforeSavingActivity(logger) {
     delegate.onSelect();
     Test.assert(!w.running && w.confirmSave && w.recording.pending());
     Test.assert(f.stops == 1 && f.saves == 0 && !f.active);
-    Test.assert(w.recording.state.equals("FIT NOT SAVED"));
+    Test.assert(w.paused && w.endChoice == 2 && w.recording.state.equals("FIT PAUSED"));
     var frozen = w.finishedMs;
     delegate.onBack();
     Test.assert(!w.confirmSave && f.saves == 0);
@@ -79,6 +79,7 @@ function confirmBeforeSavingActivity(logger) {
     Test.assert(f.saves == 0 && w.recording.pending());
     delegate.onSelect(); // Reopen confirmation; does not save.
     Test.assert(w.confirmSave && f.saves == 0);
+    delegate.onNextPage(); // Select Save after reopening the pause menu.
     delegate.onSelect(); // Explicit confirmation.
     Test.assert(f.saves == 1 && !w.recording.pending() && !w.confirmSave);
     Test.assert(f.stops == 1 && w.finishedMs == frozen);
@@ -137,8 +138,8 @@ function discardRequiresExplicitStartConfirmation(logger) {
     delegate.onNextPage();
     Test.assert(w.running && f.stops == 0);
     delegate.onSelect();
-    Test.assert(!w.running && w.endChoice == 0 && w.confirmSave);
-    delegate.onNextPage();
+    Test.assert(!w.running && w.paused && w.endChoice == 2 && w.confirmSave);
+    delegate.onPreviousPage();
     Test.assert(w.endChoice == 1);
     delegate.onSelect();
     Test.assert(w.confirmDiscard && f.discards == 0 && f.saves == 0);
@@ -148,6 +149,8 @@ function discardRequiresExplicitStartConfirmation(logger) {
     Test.assert(!w.confirmDiscard && w.confirmSave && f.discards == 0);
     delegate.onPreviousPage();
     Test.assert(w.endChoice == 0);
+    delegate.onPreviousPage();
+    Test.assert(w.endChoice == 2); // Resume is between Save and Discard when wrapping.
     delegate.onPreviousPage();
     Test.assert(w.endChoice == 1);
     delegate.onSelect();
@@ -164,12 +167,12 @@ function discardFailurePreservesPendingActivity(logger) {
     var f = new FakeWorkoutSession();
     var w = new ConfirmationController(f);
     w.start();
-    w.chooseEnd(1);
+    w.chooseEnd(-1);
     w.start();
     f.discardOk = false;
     w.start();
     Test.assert(w.recording.pending() && w.confirmDiscard && f.discards == 1);
-    Test.assert(!w.showingDiscarded && w.timer.callback == null);
+    Test.assert(!w.showingDiscarded && !w.running);
     Test.assert(w.recording.state.equals("FIT DISCARD ERROR") && f.saves == 0);
     f.discardOk = true;
     f.throwDiscard = true;
@@ -192,7 +195,7 @@ function discardedNoticeReturnsHome(logger) {
     var originalPlan = w.plan;
     var delegate = new WorkoutDelegate(w);
     w.start();
-    w.chooseEnd(1);
+    w.chooseEnd(-1);
     w.start();
     w.start();
     Test.assert(w.showingDiscarded && !w.recording.pending());

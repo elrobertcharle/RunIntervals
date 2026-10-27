@@ -8,6 +8,8 @@ class WorkoutEngine {
     var skipped = 0;
     var totalMs = 0l;
     var effortResults = [];
+    var pauseClock;
+    var pausedMs = 0l;
 
     function initialize(repetitions, warmupMs, cooldownMs, startTick) {
         if (repetitions.size() == 0 || warmupMs < 0 || cooldownMs < 0) {
@@ -38,12 +40,22 @@ class WorkoutEngine {
     }
     function done() { return index >= phases.size(); }
     function phase() { return done() ? null : phases[index]; }
-    function elapsed(tick) { return clock.elapsed(tick); }
+    function elapsed(tick) {
+        return clock.elapsed(pauseClock == null ? tick : pauseClock.origin) - pausedMs;
+    }
+    function pause(tick) {
+        if (pauseClock == null) { pauseClock = new DeadlineEngine(1, 1, tick); }
+    }
+    function resume(tick) {
+        if (pauseClock == null) { return; }
+        pausedMs += pauseClock.elapsed(tick);
+        pauseClock = null;
+    }
 
     // Keep the effort target unchanged for FIT metadata and reference marks.
     // Recovery starts at the actual button time, whether early or late.
     function lap(tick) {
-        if (done() || !phase()[0].equals("EFFORT")) { return false; }
+        if (pauseClock != null || done() || !phase()[0].equals("EFFORT")) { return false; }
         var now = elapsed(tick);
         var p = phase();
         if (now < p[1]) { return false; }
@@ -61,6 +73,7 @@ class WorkoutEngine {
 
     // Return [phase changed, reference mark]. Efforts always wait for LAP.
     function update(tick) {
+        if (pauseClock != null) { return [false, false]; }
         var now = elapsed(tick);
         var changed = false;
         while (!done() && !phase()[0].equals("EFFORT") && now >= phase()[2]) {

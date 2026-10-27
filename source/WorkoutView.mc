@@ -22,14 +22,18 @@ class WorkoutView extends WatchUi.View {
         var fit = workout.recording;
         if (workout.running) { drawRunning(dc); return; }
         if (workout.confirmSave && fit.pending()) {
-            line(dc, workout.confirmDiscard ? 0.36 : 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : "ACTIVITY STOPPED");
+            line(dc, workout.confirmDiscard ? 0.36 : 0.12, Graphics.FONT_SMALL, workout.confirmDiscard ? "Discard activity?" : (workout.paused ? "ACTIVITY PAUSED" : "ACTIVITY STOPPED"));
             line(dc, workout.confirmDiscard ? 0.49 : 0.25, Graphics.FONT_LARGE, text.duration(workout.finishedMs));
             if (!workout.confirmDiscard) {
-                line(dc, 0.41, Graphics.FONT_TINY, fit.state);
+                line(dc, 0.38, Graphics.FONT_TINY, fit.state);
+                if (workout.paused) {
+                    dc.setColor(workout.endChoice == 2 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+                    line(dc, 0.49, Graphics.FONT_SMALL, (workout.endChoice == 2 ? "> " : "") + "Resume");
+                }
                 dc.setColor(workout.endChoice == 0 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-                line(dc, 0.53, Graphics.FONT_SMALL, (workout.endChoice == 0 ? "> " : "") + "Save");
+                line(dc, workout.paused ? 0.61 : 0.53, Graphics.FONT_SMALL, (workout.endChoice == 0 ? "> " : "") + "Save");
                 dc.setColor(workout.endChoice == 1 ? Graphics.COLOR_BLUE : Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-                line(dc, 0.65, Graphics.FONT_SMALL, (workout.endChoice == 1 ? "> " : "") + "Discard");
+                line(dc, workout.paused ? 0.73 : 0.65, Graphics.FONT_SMALL, (workout.endChoice == 1 ? "> " : "") + "Discard");
                 dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
             }
             return;
@@ -89,7 +93,7 @@ class WorkoutView extends WatchUi.View {
         } else { line(dc, 0.60, Graphics.FONT_SMALL, "Auto finish"); }
         var fit = workout.recording;
         line(dc, 0.79, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
-        line(dc, 0.87, Graphics.FONT_XTINY, "START: stop");
+        line(dc, 0.87, Graphics.FONT_XTINY, "START: pause");
         var width = dc.getWidth() * 0.60;
         var progress = (now - p[1]).toFloat() / (p[2] - p[1]);
         if (progress < 0) { progress = 0; }

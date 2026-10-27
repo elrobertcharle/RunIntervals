@@ -10,12 +10,13 @@ class WorkoutController {
     var engine;
     var timer;
     var running = false;
+    var paused = false;
     var status = "READY";
     var lastUi = 0;
     var recording;
     var finishedMs = 0;
     var confirmSave = false;
-    var endChoice = 0; // 0 = save, 1 = discard
+    var endChoice = 0; // 0 = save, 1 = discard, 2 = resume (paused only)
     var confirmDiscard = false;
     var showingDiscarded = false;
 
@@ -55,15 +56,22 @@ class WorkoutController {
     }
     function start() {
         if (showingDiscarded) { return; }
-        if (running) { finish("CANCELLED"); return; }
+        if (running) { pause(); return; }
         if (recording.pending()) {
             if (!confirmSave) {
                 confirmSave = true;
-                endChoice = 0;
+                endChoice = paused ? 2 : 0;
                 confirmDiscard = false;
             }
+            else if (endChoice == 2 && paused) { resume(); }
             else if (endChoice == 1 && !confirmDiscard) { confirmDiscard = true; }
             else {
+                if (paused) {
+                    paused = false;
+                    status = "CANCELLED";
+                    recording.stop("CANCELLED");
+                    recording.release();
+                }
                 if (endChoice == 1) { recording.discard(); }
                 else { recording.finish(null); }
                 if (!recording.pending()) {
@@ -101,6 +109,30 @@ class WorkoutController {
         } catch (e) { finish("START ERROR"); }
         WatchUi.requestUpdate();
     }
+    function pause() {
+        var tick = System.getTimer();
+        if (!recording.pause()) { WatchUi.requestUpdate(); return; }
+        engine.pause(tick);
+        finishedMs = engine.elapsed(tick);
+        running = false;
+        paused = true;
+        timer.stop();
+        status = "PAUSED";
+        confirmSave = true;
+        confirmDiscard = false;
+        endChoice = 2;
+        WatchUi.requestUpdate();
+    }
+    function resume() {
+        if (!paused || !recording.resume()) { return; }
+        engine.resume(System.getTimer());
+        paused = false;
+        running = true;
+        status = "IN PROGRESS";
+        confirmSave = false;
+        confirmDiscard = false;
+        timer.start(method(:onTick), 50, true);
+    }
     function returnToHomeAfterDiscard() {
         if (!showingDiscarded) { return; }
         showingDiscarded = false;
@@ -114,7 +146,8 @@ class WorkoutController {
     }
     function chooseEnd(direction) {
         if (running || !recording.pending() || !confirmSave || confirmDiscard) { return; }
-        endChoice = (endChoice + direction + 2) % 2;
+        var choices = paused ? 3 : 2;
+        endChoice = (endChoice + direction + choices) % choices;
         WatchUi.requestUpdate();
     }
     function onTick() {
@@ -154,6 +187,7 @@ class WorkoutController {
             if (engine.done() && finishedMs > engine.totalMs) { finishedMs = engine.totalMs; }
         }
         running = false;
+        paused = false;
         timer.stop();
         status = reason;
         recording.stop(reason);
@@ -165,8 +199,9 @@ class WorkoutController {
     }
     function shutdown() {
         showingDiscarded = false;
-        var reason = running ? "APP STOP" : null;
+        var reason = running || paused ? "APP STOP" : null;
         running = false;
+        paused = false;
         timer.stop();
         recording.stop(reason);
         recording.release();

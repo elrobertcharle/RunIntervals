@@ -108,11 +108,27 @@ class WorkoutRecording {
         phaseIndex = index;
         if (metadata != null) { metadata.endIndex = index; }
     }
+    function pause() {
+        if (!pending()) { return false; }
+        try {
+            if (session.isRecording() && !session.stop()) { state = "FIT STOP ERROR"; return false; }
+            state = "FIT PAUSED";
+            return true;
+        } catch (e) { state = "FIT STOP ERROR"; return false; }
+    }
+    function resume() {
+        if (!pending()) { return false; }
+        try {
+            if (!session.isRecording() && !session.start()) { state = "FIT RESUME ERROR"; return false; }
+            state = "RECORDING";
+            return true;
+        } catch (e) { state = "FIT RESUME ERROR"; return false; }
+    }
     function stop(reason) {
         if (!pending()) { return true; }
         try {
+            if (metadata != null) { metadata.finish(reason, lapErrors, missedBoundaries); }
             if (session.isRecording()) {
-                if (metadata != null) { metadata.finish(reason, lapErrors, missedBoundaries); }
                 if (!session.stop()) { state = "FIT STOP ERROR"; return false; }
             }
             state = "FIT NOT SAVED";
