@@ -128,7 +128,6 @@ class WorkoutEditor extends WatchUi.View {
         else if (individual && field == 3 && repIndex == draft.repetitions.size() - 1) { hint = "Last recovery unused"; }
         dc.drawText(x, h * 0.54, Graphics.FONT_SMALL, hint, Graphics.TEXT_JUSTIFY_CENTER);
         var note = individual ? "Changes stay in draft" : (field >= 1 && field <= 3 ? "Applies to every rep" : "Apply saves session");
-        if (!individual && field == 4) { note = ""; }
         if (!individual && !editing && draft.mixed(field)) { note = "Mixed: edit sets all reps"; }
         if (!individual && field == 8) { note = "Replaces selected slot"; }
         if (!individual && field == 9) { note = "Load, review, then Apply"; }

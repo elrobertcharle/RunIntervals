@@ -62,6 +62,50 @@ function lapButtonClosesOnlyEffort(logger) {
 }
 
 (:test)
+function downButtonClosesOnlyEffort(logger) {
+    var f = new FakeWorkoutSession();
+    var w = new ConfirmationController(f);
+    var delegate = new WorkoutDelegate(w);
+    delegate.onNextPage(); // DOWN cannot skip warm-up.
+    Test.assert(w.engine.index == 0 && f.laps == 0 && w.running);
+    w.engine = new WorkoutEngine([[400,23000,60000],[400,23000,0]],0,60000,System.getTimer() - 95000);
+    f.fields = [];
+    w.recording.metadata = new WorkoutFitMetadata(f, w.engine.phases);
+    delegate.onNextPage(); // Same real duration and FIT boundary as LAP.
+    Test.assert(w.running && w.engine.phase()[0].equals("RECOVERY"));
+    Test.assert(w.engine.effortResults[0][1] >= 95000);
+    Test.assert(f.laps == 1 && f.stops == 0 && f.saves == 0);
+    delegate.onNextPage();
+    Test.assert(w.engine.index == 1 && f.laps == 1);
+    w.engine.clock.origin -= 60000;
+    w.onTick();
+    Test.assert(w.engine.phase()[0].equals("EFFORT"));
+    delegate.onNextPage();
+    Test.assert(w.engine.phase()[0].equals("COOL-DOWN") && f.laps == 3);
+    delegate.onNextPage();
+    Test.assert(w.engine.index == 3 && f.laps == 3 && w.running);
+    w.shutdown();
+
+    f = new FakeWorkoutSession();
+    w = new ConfirmationController(f);
+    w.engine = new WorkoutEngine([[100,1000,0]],0,0,System.getTimer() - 3500);
+    f.fields = [];
+    w.recording.metadata = new WorkoutFitMetadata(f, w.engine.phases);
+    delegate = new WorkoutDelegate(w);
+    delegate.onSelect(); // While paused, DOWN navigates without closing the effort.
+    delegate.onNextPage();
+    Test.assert(w.paused && w.endChoice == 0 && w.engine.index == 0 && f.laps == 0);
+    delegate.onPreviousPage(); // Resume.
+    delegate.onSelect();
+    delegate.onNextPage(); // Final effort without cool-down opens the save menu.
+    Test.assert(!w.running && w.engine.done() && w.confirmSave);
+    Test.assert(f.stops == 2 && f.saves == 0 && w.finishedMs >= 3500);
+    delegate.onNextPage();
+    Test.assert(w.endChoice == 1 && f.saves == 0 && f.discards == 0);
+    return true;
+}
+
+(:test)
 function confirmBeforeSavingActivity(logger) {
     var f = new FakeWorkoutSession();
     var w = new ConfirmationController(f);

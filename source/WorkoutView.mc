@@ -227,7 +227,8 @@ class WorkoutDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
     function onNextPage() {
-        if (workout.recording.pending()) { workout.chooseEnd(1); }
+        if (workout.running) { workout.lap(); }
+        else if (workout.recording.pending()) { workout.chooseEnd(1); }
         else { workout.showSteps(); }
         return true;
     }

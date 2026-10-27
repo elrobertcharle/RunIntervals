@@ -1,6 +1,6 @@
-# Final de esfuerzo con LAP
+# Final de esfuerzo con DOWN o LAP
 
-El tiempo objetivo guía los avisos; el final real de cada esfuerzo lo marca el corredor con BACK/LAP (botón inferior derecho del FR970).
+El tiempo objetivo guía los avisos; el final real de cada esfuerzo lo marca el corredor con DOWN (botón inferior izquierdo del FR970) o BACK/LAP (inferior derecho). Durante el entrenamiento ambos llaman a la misma función LAP descrita aquí. DOWN no adelanta calentamiento, recuperación ni enfriamiento; antes de empezar abre STEPS y en los menús de pausa y final conserva su función de navegación.
 
 - El calentamiento, las recuperaciones y el enfriamiento siguen siendo automáticos.
 - El esfuerzo muestra tiempo transcurrido con décimas y espera LAP sin límite asociado al objetivo.
@@ -15,8 +15,8 @@ El tiempo objetivo guía los avisos; el final real de cada esfuerzo lo marca el 
 
 1. Configurar dos repeticiones cortas con recuperación y enfriamiento.
 2. En la primera, esperar más allá del objetivo: el esfuerzo debe continuar y el cronómetro seguir avanzando, sin nuevos avisos tras el último parcial.
-3. Pulsar BACK/LAP: comprobar el tiempo LAST y que comienza la recuperación completa. Volver a pulsar durante la recuperación: no debe adelantarla.
-4. En la segunda, pulsar LAP antes del objetivo: debe comenzar directamente el enfriamiento y mostrar el tiempo real.
+3. Pulsar DOWN: comprobar el tiempo LAST y que comienza la recuperación completa. Volver a pulsar DOWN y BACK/LAP durante la recuperación: no deben adelantarla.
+4. En la segunda, pulsar BACK/LAP antes del objetivo: debe comenzar directamente el enfriamiento y mostrar el tiempo real. DOWN tampoco debe adelantar el enfriamiento. Repetir intercambiando los botones y comprobar que DOWN sigue navegando en pausa y en el menú final.
 5. Al terminar el enfriamiento, guardar con START. Revisar las vueltas de esfuerzo en el FIT: tiempos reales distintos de los objetivos, con sus nombres y números de repetición.
 6. Repetir una sesión corta en el reloj físico antes de usarla en pista; el simulador no valida botones, audio, GPS ni FIT del dispositivo real.
 
