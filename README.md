@@ -28,6 +28,8 @@ Durante una actividad, START pausa el reloj del entrenamiento, los avisos y la g
 
 La fase 4 añade un editor en el reloj (UP o MENU antes de iniciar), un borrador con aplicar/cancelar y una pantalla de entrenamiento con cuenta regresiva grande y progreso por fase. Controles y límites en [FASE4.md](docs/FASE4.md). La fase 5 conserva la última sesión aplicada al salir, añade tres perfiles persistentes y permite editar distancia, intervalo y recuperación por repetición. Uso y protocolo en [FASE5.md](docs/FASE5.md). La fase 3 conserva una única actividad FIT continua, GPS, frecuencia cardíaca y vueltas por fase. START permite pausar la actividad parcial y elegir reanudar, guardar o descartar. El flujo de guardado descrito en documentos de fases anteriores queda sustituido por el indicado arriba.
 
+Los avisos de paso usan el sonido predefinido `TONE_DISTANCE_ALERT`, pendiente de valoración auditiva en el reloj. La secuencia personalizada con `ToneProfile` sonaba en el simulador pero no en el 970 físico; se retiró. Garmin documenta esta limitación en algunos modelos con altavoz: https://forums.garmin.com/developer/connect-iq/i/bug-reports/fenix-8---no-sound-from-app-when-using-toneprofile. La cuenta atrás de recuperación conserva `TONE_LOUD_BEEP`. No se incluyen archivos de audio externos.
+
 ## Compilar
 
 Requiere Connect IQ SDK, dispositivo `fr970`, Java en PATH y clave de desarrollador fuera del control de versiones. El equipo dispone de SDK 9.3.0 y Java 21; configurar sus rutas en cada terminal.

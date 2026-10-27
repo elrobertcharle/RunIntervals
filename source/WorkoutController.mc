@@ -165,6 +165,10 @@ class WorkoutController {
         handleEvent([true, false, false], tick);
     }
     function playTone(tone) { Attention.playTone(tone); }
+    function playPassAlert() {
+        // Speaker-based watches may silently ignore custom ToneProfile sequences.
+        playTone(Attention.TONE_DISTANCE_ALERT);
+    }
     function handleEvent(event, tick) {
         try {
             if (engine.done()) {
@@ -174,7 +178,7 @@ class WorkoutController {
                 return;
             }
             // Only the current phase can produce a reference tone.
-            if (event[1]) { playTone(Attention.TONE_LOUD_BEEP); }
+            if (event[1]) { playPassAlert(); }
             else if (event[0]) { playTone(Attention.TONE_INTERVAL_ALERT); }
             else if (event[2]) { playTone(Attention.TONE_LOUD_BEEP); }
         } catch (e) { finish("SOUND ERROR"); return; }
