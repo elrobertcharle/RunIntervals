@@ -10,7 +10,7 @@ class WorkoutEngine {
     var effortResults = [];
     var pauseClock;
     var pausedMs = 0l;
-    var lastCountdownSecond = 5;
+    var lastCountdownSecond = 11;
 
     function initialize(repetitions, warmupMs, cooldownMs, startTick) {
         if (repetitions.size() == 0 || warmupMs < 0 || cooldownMs < 0) {
@@ -69,18 +69,20 @@ class WorkoutEngine {
         totalMs += shift;
         index += 1;
         nextMark = 1;
-        lastCountdownSecond = 5;
+        lastCountdownSecond = 11;
         return true;
     }
 
-    // Countdown cues at 4, 3, 2, 1 only. At 0, use the existing phase-change alert.
+    // Approach cue at 10, then countdown at 4, 3, 2, 1.
+    // At 0, use the existing phase-change alert.
     // Delayed callbacks emit only the current cue, never a burst of stale beeps.
     function countdownDue(now) {
         if (done() || !phase()[0].equals("RECOVERY") ||
             index + 1 >= phases.size() || !phases[index + 1][0].equals("EFFORT")) { return false; }
         var left = phase()[2] - now;
-        if (left <= 0 || left > 4000) { return false; }
+        if (left <= 0 || left > 10000) { return false; }
         var second = ((left + 999) / 1000).toNumber();
+        if (second > 4 && (second != 10 || phase()[2] - phase()[1] < 10000)) { return false; }
         if (second >= lastCountdownSecond) { return false; }
         lastCountdownSecond = second;
         return true;
@@ -94,7 +96,7 @@ class WorkoutEngine {
         while (!done() && !phase()[0].equals("EFFORT") && now >= phase()[2]) {
             index += 1;
             nextMark = 1;
-            lastCountdownSecond = 5;
+            lastCountdownSecond = 11;
             changed = true;
         }
         if (done() || !phase()[0].equals("EFFORT")) { return [changed, false, countdownDue(now)]; }

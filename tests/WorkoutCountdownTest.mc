@@ -60,21 +60,56 @@ class CountdownController extends ConfirmationController {
 }
 
 (:test)
-function controllerPlaysFiveCountdownCuesWithoutExtraLaps(logger) {
+function controllerPlaysApproachAndCountdownCuesWithoutExtraLaps(logger) {
     var f = new FakeWorkoutSession();
     var w = new CountdownController(f);
     w.engine = new WorkoutEngine([[100,1000,10000],[100,1000,0]],0,0,0);
     w.engine.lap(1000);
     w.recording.phaseChanged(w.engine.index);
+    w.handleEvent(w.engine.update(1050), 1050);
+    Test.assert(w.tones.size() == 1 && w.tones[0] == Attention.TONE_LOUD_BEEP);
     for (var tick = 7000; tick <= 10000; tick += 1000) {
         w.handleEvent(w.engine.update(tick), tick);
     }
-    Test.assert(w.tones.size() == 4 && f.laps == 1);
+    Test.assert(w.tones.size() == 5 && f.laps == 1);
     w.handleEvent(w.engine.update(11000), 11000);
-    Test.assert(w.tones.size() == 5 && f.laps == 2 && f.starts == 1 && f.stops == 0);
-    for (var i = 0; i < 4; i += 1) { Test.assert(w.tones[i] == Attention.TONE_LOUD_BEEP); }
-    Test.assert(w.tones[4] == Attention.TONE_INTERVAL_ALERT);
+    Test.assert(w.tones.size() == 6 && f.laps == 2 && f.starts == 1 && f.stops == 0);
+    for (var i = 0; i < 5; i += 1) { Test.assert(w.tones[i] == Attention.TONE_LOUD_BEEP); }
+    Test.assert(w.tones[5] == Attention.TONE_INTERVAL_ALERT);
     w.handleEvent(w.engine.update(11050), 11050);
-    Test.assert(w.tones.size() == 5 && f.laps == 2);
+    Test.assert(w.tones.size() == 6 && f.laps == 2);
+    return true;
+}
+
+(:test)
+function approachCueIsOncePerRecoveryAndRespectsPause(logger) {
+    var e = new WorkoutEngine([[100,1000,15000],[100,1000,15000],[100,1000,0]],0,0,0);
+    Test.assert(e.lap(1000));
+    Test.assert(!e.update(5999)[2]);
+    Test.assert(e.update(6000)[2]);
+    Test.assert(!e.update(6050)[2]);
+    e.pause(6500);
+    Test.assert(!e.update(100000)[2]);
+    e.resume(16500);
+    Test.assert(!e.update(16500)[2]);
+    for (var tick = 17000; tick < 22000; tick += 1000) { Test.assert(!e.update(tick)[2]); }
+    Test.assert(e.update(22000)[2]);
+    Test.assert(e.update(26000)[0]);
+    Test.assert(e.lap(27000));
+    Test.assert(e.update(32000)[2]); // The next recovery gets its own approach cue.
+    return true;
+}
+
+(:test)
+function approachCueSkipsShortRecoveryAndMissedWindow(logger) {
+    var e = new WorkoutEngine([[100,1000,9500],[100,1000,0]],0,0,0);
+    Test.assert(e.lap(1000));
+    Test.assert(!e.update(1050)[2]); // Less than ten seconds: no approach cue.
+    Test.assert(e.update(6500)[2]);
+    e = new WorkoutEngine([[100,1000,15000],[100,1000,0]],0,0,0);
+    Test.assert(e.lap(1000));
+    Test.assert(!e.update(5999)[2]);
+    Test.assert(!e.update(7000)[2]); // Do not replay the ten-second cue at nine.
+    Test.assert(e.update(12000)[2]);
     return true;
 }

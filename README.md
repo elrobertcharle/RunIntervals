@@ -12,7 +12,7 @@ Cada esfuerzo termina al pulsar DOWN (botón inferior izquierdo del FR970) o BAC
 - Reloj monotónico y objetivos absolutos dentro de cada esfuerzo. LAP ajusta el inicio de las fases posteriores al final real de la repetición.
 - Origen planificado propio para cada esfuerzo y avisos configurables en pasos de cinco centésimas de segundo.
 - Avisos de 100 m solo durante esfuerzos, incluido el último parcial objetivo. Después del último aviso no se añaden marcas mientras se espera LAP.
-- Antes del siguiente esfuerzo, la recuperación avisa a 4, 3, 2 y 1 segundos restantes con un pitido. Al comenzar el esfuerzo suena únicamente la alerta habitual del cambio de fase, sin un pitido adicional de cuenta atrás. La pausa congela la secuencia. Las recuperaciones de menos de cinco segundos emiten solo los avisos disponibles; los callbacks tardíos no acumulan pitidos. No hay cuenta atrás sonora en el enfriamiento.
+- Antes del siguiente esfuerzo, la recuperación emite un pitido a 10 segundos restantes para acercarse a la salida y después avisa a 4, 3, 2 y 1 segundos con el mismo sonido. Las recuperaciones de menos de 10 segundos omiten el aviso de acercamiento. Al comenzar el esfuerzo suena únicamente la alerta habitual del cambio de fase, sin un pitido adicional de cuenta atrás. La pausa congela la secuencia. Las recuperaciones de menos de cinco segundos emiten solo los avisos disponibles; los callbacks tardíos no acumulan pitidos. No hay cuenta atrás sonora en el enfriamiento.
 - Ante callbacks perdidos, solo se solicita el último aviso vencido del esfuerzo vigente. Ningún esfuerzo se omite automáticamente.
 - Pantalla con fase, repetición, tiempo transcurrido del esfuerzo o cuenta regresiva de recuperación, siguiente marca, ritmo e intervalo.
 
