@@ -23,7 +23,7 @@ class WorkoutSteps extends WatchUi.View {
     function title(index) {
         var p = phases[index];
         if (p[0].equals("EFFORT")) {
-            return "Run " + (plan.repetitions[p[3]][0] / 1000.0).format("%.2f") + " km";
+            return "Run " + plan.repetitions[p[3]][0] + " m";
         }
         var label = p[0].equals("RECOVERY") ? "Rest " : "Cool down ";
         return label + text.duration(p[2] - p[1]);
