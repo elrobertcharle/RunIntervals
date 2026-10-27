@@ -27,12 +27,12 @@ function individualRepetitionTimeline(logger) {
     p.setValue(0, 2);
     p.setValue(4, 0);
     Test.assert(p.setRepetitionValue(0, 1, 200));
-    Test.assert(p.setRepetitionValue(0, 2, 225));
+    Test.assert(p.setRepetitionValue(0, 2, 22500));
     Test.assert(p.setRepetitionValue(0, 3, 10));
     Test.assert(p.setRepetitionValue(1, 1, 400));
-    Test.assert(p.setRepetitionValue(1, 2, 221));
-    Test.assert(!p.setRepetitionValue(2, 2, 230));
-    Test.assert(!p.setRepetitionValue(0, 2, 9));
+    Test.assert(p.setRepetitionValue(1, 2, 22100));
+    Test.assert(!p.setRepetitionValue(2, 2, 23000));
+    Test.assert(!p.setRepetitionValue(0, 2, 900));
     Test.assert(!p.setRepetitionValue(0, 1, 350));
     Test.assert(!p.setRepetitionValue(0, 3, 11));
     var e = p.timeline();
@@ -133,7 +133,8 @@ function profileEditorDraftAndFailures(logger) {
     editor.select();
     editor.move(-1);
     editor.select();
-    Test.assert(editor.draft.repetitions[1][1] == 22600);
+    editor.select();
+    Test.assert(editor.draft.repetitions[1][1] == 21700);
     Test.assert(w.plan.repetitions[1][1] == 22700 && editor.draft.repetitions[0][1] == 23000);
     editor.back();
     editor.field = 8;
@@ -143,7 +144,7 @@ function profileEditorDraftAndFailures(logger) {
     Test.assert(!editor.confirming);
     editor.select();
     editor.select();
-    Test.assert(w.profiles.load("profile-1").repetitions[1][1] == 22600);
+    Test.assert(w.profiles.load("profile-1").repetitions[1][1] == 21700);
     editor.draft.setValue(0, 1);
     editor.field = 9;
     editor.select();
@@ -153,7 +154,7 @@ function profileEditorDraftAndFailures(logger) {
     Test.assert(editor.draft.repetitions.size() == 4 && editor.message.equals("Empty slot"));
     w.profiles.failWrites = true;
     Test.assert(!w.profiles.save("profile-1", w.plan));
-    Test.assert(w.profiles.load("profile-1").repetitions[1][1] == 22600);
+    Test.assert(w.profiles.load("profile-1").repetitions[1][1] == 21700);
     w.profiles.failDeletes = true;
     Test.assert(!w.profiles.erase("profile-1"));
     w.profiles.failReads = true;
@@ -184,7 +185,7 @@ class ProfileApplyController extends WorkoutController {
 function activePlanSaveFailureAndGuards(logger) {
     var w = new ProfileApplyController();
     var draft = w.plan.copy();
-    draft.setRepetitionValue(1, 2, 200);
+    draft.setRepetitionValue(1, 2, 20000);
     w.profiles.failWrites = true;
     Test.assert(!w.applyPlan(draft));
     Test.assert(w.plan.repetitions[1][1] == 22700 && w.recording.prepared == 0);
@@ -198,7 +199,7 @@ function activePlanSaveFailureAndGuards(logger) {
     w.recording.isPending = false;
     Test.assert(w.applyPlan(draft));
     Test.assert(w.plan.repetitions[1][1] == 20000 && w.recording.prepared == 1);
-    draft.setRepetitionValue(1, 2, 210);
+    draft.setRepetitionValue(1, 2, 21000);
     Test.assert(w.plan.repetitions[1][1] == 20000);
     Test.assert(w.profiles.load("active-session").repetitions[1][1] == 20000);
     return true;

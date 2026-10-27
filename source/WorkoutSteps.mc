@@ -80,9 +80,6 @@ class WorkoutSteps extends WatchUi.View {
         if (thumb < 6) { thumb = 6; }
         var offset = phases.size() > 1 ? selected.toFloat() / (phases.size() - 1) * (h * 0.32 - thumb) : 0;
         dc.fillRectangle(w * 0.90, h * 0.34 + offset, 3, thumb);
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
-        dc.drawText(w / 2, h * 0.85, Graphics.FONT_XTINY, "UP/DOWN", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(w / 2, h * 0.91, Graphics.FONT_XTINY, "BACK", Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
 

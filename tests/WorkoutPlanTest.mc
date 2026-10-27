@@ -23,7 +23,7 @@ function editedPlanTimeline(logger) {
     Test.assert(p.mixed(2) && !p.mixed(3));
     Test.assert(p.setValue(0, 2));
     Test.assert(p.setValue(1, 800));
-    Test.assert(p.setValue(2, 225));
+    Test.assert(p.setValue(2, 22500));
     Test.assert(p.setValue(3, 30));
     Test.assert(p.setValue(4, 10));
     var e = p.timeline();
@@ -59,7 +59,7 @@ function planBoundsAndCopies(logger) {
     Test.assert(p.timeline().totalMs == 1000 && p.timeline().phases.size() == 1);
     var text = new WorkoutText();
     Test.assert(text.pace(22100).equals("3:41/km"));
-    Test.assert(text.interval(22500).equals("22.5"));
+    Test.assert(text.interval(22500).equals("22.50"));
     Test.assert(text.duration(60001).equals("1:01"));
     return true;
 }
@@ -77,7 +77,8 @@ function editorDraftIsolation(logger) {
     editor.select();
     editor.move(-1);
     editor.select();
-    Test.assert(editor.draft.repetitions[0][1] == 22900);
+    editor.select();
+    Test.assert(editor.draft.repetitions[0][1] == 22000);
     Test.assert(w.plan.repetitions[0][1] == 23000);
     editor.field = 5;
     editor.move(1);
@@ -90,9 +91,9 @@ function editorDraftIsolation(logger) {
     editor.select();
     var delegate = new WorkoutEditorDelegate(editor);
     delegate.onPreviousPage(); // UP increases the edited value.
-    Test.assert(editor.candidate == 230);
+    Test.assert(editor.candidate == 23000);
     delegate.onNextPage();
-    Test.assert(editor.candidate == 229);
+    Test.assert(editor.candidate == 22000);
     return true;
 }
 

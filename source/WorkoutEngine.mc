@@ -19,7 +19,7 @@ class WorkoutEngine {
         addPhase("WARM-UP", warmupMs, -1, 0);
         for (var i = 0; i < repetitions.size(); i += 1) {
             var r = repetitions[i];
-            if (r[0] <= 0 || r[0] % 100 != 0 || r[1] <= 0 || r[1] % 100 != 0 || r[2] < 0) {
+            if (r[0] <= 0 || r[0] % 100 != 0 || r[1] <= 0 || r[1] % 50 != 0 || r[2] < 0) {
                 throw new Toybox.Lang.InvalidValueException("Invalid repetition");
             }
             addPhase("EFFORT", (r[0] / 100) * r[1].toLong(), i, r[1]);

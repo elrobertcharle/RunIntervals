@@ -21,7 +21,7 @@ No hay pausa. BACK durante una actividad termina y guarda la parte realizada.
 |---|---|---|
 | Repeticiones | 1–40 | 1 |
 | Distancia por repetición | 100–10 000 m | 100 m |
-| Intervalo de 100 m | 1,0–120,0 s | 0,1 s |
+| Intervalo de 100 m | 1,00–120,00 s | 0,05 s |
 | Recuperación | 0–60 min | 5 s |
 | Calentamiento | 0–60 min | 5 s |
 | Enfriamiento | 0–60 min | 5 s |

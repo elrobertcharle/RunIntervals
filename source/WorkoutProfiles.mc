@@ -31,7 +31,7 @@ class WorkoutProfiles {
                 if (!(r[j] instanceof Lang.Number)) { return null; }
             }
             if (r[0] < 100 || r[0] > 10000 || r[0] % 100 != 0 ||
-                r[1] < 1000 || r[1] > 120000 || r[1] % 100 != 0 || !validDuration(r[2])) { return null; }
+                r[1] < 1000 || r[1] > 120000 || r[1] % 50 != 0 || !validDuration(r[2])) { return null; }
             p.repetitions.add([r[0], r[1], r[2]]);
         }
         // Validate but ignore the legacy warm-up duration when loading old profiles.

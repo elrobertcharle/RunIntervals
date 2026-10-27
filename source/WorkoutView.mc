@@ -58,7 +58,6 @@ class WorkoutView extends WatchUi.View {
             line(dc, 0.70, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
         }
         if (fit.pending()) {
-            line(dc, 0.77, Graphics.FONT_XTINY, "START: options");
             line(dc, 0.83, Graphics.FONT_XTINY, "Activity not saved");
         }
     }
@@ -84,7 +83,7 @@ class WorkoutView extends WatchUi.View {
         if (dc.getFontHeight(timeFont) > dc.getHeight() * 0.18 || dc.getTextWidthInPixels(timeLabel, timeFont) > dc.getWidth() * 0.86) { timeFont = Graphics.FONT_NUMBER_MILD; }
         line(dc, 0.28, timeFont, timeLabel);
         var lastResult = e.effortResults.size() > 0 ? e.effortResults[e.effortResults.size() - 1] : null;
-        line(dc, 0.49, Graphics.FONT_TINY, effort ? "ELAPSED | LAP: end rep" : (lastResult == null ? "REMAINING" : "LAST " + (lastResult[0] + 1) + ": " + text.elapsedTime(lastResult[1])));
+        line(dc, 0.49, Graphics.FONT_TINY, effort ? "ELAPSED" : (lastResult == null ? "REMAINING" : "LAST " + (lastResult[0] + 1) + ": " + text.elapsedTime(lastResult[1])));
         if (repIndex >= 0) {
             var r = workout.repetitions[repIndex];
             if (effort) {
@@ -92,13 +91,12 @@ class WorkoutView extends WatchUi.View {
                 if (markLeft < 0) { markLeft = 0; }
                 var finalMark = e.nextMark >= r[0] / 100;
                 var targetPassed = e.nextMark > r[0] / 100;
-                line(dc, 0.56, Graphics.FONT_SMALL, targetPassed ? "Target reached | LAP" : (finalMark ? "Target: " : "100 m: ") + text.interval(markLeft) + " s");
+                line(dc, 0.56, Graphics.FONT_SMALL, targetPassed ? "Target reached" : (finalMark ? "Target: " : "100 m: ") + text.interval(markLeft) + " s");
             } else { line(dc, 0.56, Graphics.FONT_SMALL, "Next: " + r[0] + " m"); }
             line(dc, 0.68, Graphics.FONT_TINY, text.pace(r[1]) + " | " + text.interval(r[1]) + " s");
         } else { line(dc, 0.60, Graphics.FONT_SMALL, "Auto finish"); }
         var fit = workout.recording;
         line(dc, 0.79, Graphics.FONT_XTINY, (fit.gpsReady() ? "GPS OK" : "GPS ...") + " | HR " + (fit.heartRate == null ? "--" : fit.heartRate.toString()));
-        line(dc, 0.87, Graphics.FONT_XTINY, "START: pause");
         var width = dc.getWidth() * 0.60;
         var progress = (now - p[1]).toFloat() / (p[2] - p[1]);
         if (progress < 0) { progress = 0; }

@@ -23,8 +23,6 @@ class ProbeView extends WatchUi.View {
         }
         dc.drawText(x, (y * 0.39).toNumber(), Graphics.FONT_LARGE, main, Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x, (y * 0.57).toNumber(), Graphics.FONT_SMALL, detail, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x, (y * 0.70).toNumber(), Graphics.FONT_TINY, probe.running ? "BACK: finalizar prueba" : "START: iniciar | UP: intervalo", Graphics.TEXT_JUSTIFY_CENTER);
-        if (!probe.running) { dc.drawText(x, (y * 0.77).toNumber(), Graphics.FONT_TINY, "DOWN: activar/desactivar FIT", Graphics.TEXT_JUSTIFY_CENTER); }
     }
 }
 

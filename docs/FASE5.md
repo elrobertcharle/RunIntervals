@@ -36,7 +36,7 @@ Un registro ausente inicia la demo; uno inválido o ilegible inicia la demo con
 6. `Apply session` aplica y guarda todo. BACK desde el editor general descarta el borrador.
 
 Se mantienen los límites de fase 4: distancia 100–10 000 m por pasos de 100 m;
-intervalo 1,0–120,0 s por pasos de 0,1 s; recuperación 0–60 min por pasos de 5 s.
+intervalo 1,00–120,00 s por pasos de 0,05 s; recuperación 0–60 min por pasos de 5 s.
 La recuperación de la última repetición se conserva como dato pero nunca se ejecuta.
 Los campos globales de distancia, intervalo y recuperación siguen modificando todas
 las repeticiones. Cambiar la cantidad conserva las existentes; las nuevas copian

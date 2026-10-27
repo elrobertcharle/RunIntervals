@@ -9,10 +9,10 @@ function stepsFollowScheduledTimeline(logger) {
     Test.assert(steps.phases.size() == 4);
     Test.assert(steps.title(0).equals("Run 1.00 km"));
     Test.assert(steps.paceLabel(0).equals("Pace 3:45/km"));
-    Test.assert(steps.alertLabel(0).equals("Alert 22.5 s / 100 m"));
+    Test.assert(steps.alertLabel(0).equals("Alert 22.50 s / 100 m"));
     Test.assert(steps.title(1).equals("Rest 0:30"));
     Test.assert(steps.title(2).equals("Run 0.40 km"));
-    Test.assert(steps.alertLabel(2).equals("Alert 23.1 s / 100 m"));
+    Test.assert(steps.alertLabel(2).equals("Alert 23.10 s / 100 m"));
     Test.assert(steps.title(3).equals("Cool down 1:00"));
     p.repetitions[0][0] = 800;
     Test.assert(steps.title(0).equals("Run 1.00 km"));
@@ -34,7 +34,7 @@ function stepsSkipAbsentPhasesAndClampScroll(logger) {
     Test.assert(steps.selected == 1);
     delegate.onNextPage();
     Test.assert(steps.selected == 1);
-    Test.assert(steps.alertLabel(1).equals("Alert 120.0 s / 100 m"));
+    Test.assert(steps.alertLabel(1).equals("Alert 120.00 s / 100 m"));
     Test.assert(steps.paceLabel(1).equals("Pace 20:00/km"));
     delegate.onPreviousPage();
     Test.assert(steps.selected == 0);
